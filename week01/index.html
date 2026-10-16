@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Interactive Activities</title>
+<style>
+  :root{
+    --navy:#1B2A4A; --navy2:#20304B; --blue:#2E5A88; --blueLt:#5E83B0;
+    --amber:#D7991F; --amberDk:#B07B12; --ink:#20262E; --muted:#6B7280;
+    --paper:#FBF7F0; --panel:#F4EEE2; --line:#DED3BF; --card:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Calibri,system-ui,sans-serif;color:var(--ink);
+       background:linear-gradient(160deg,#FBF7F0,#F4EEE2);line-height:1.5;padding:24px 16px 56px;min-height:100vh}
+  .wrap{max-width:960px;margin:0 auto}
+  header{background:var(--navy);color:#fff;border-radius:18px;padding:30px 32px;position:relative;overflow:hidden;
+         box-shadow:0 8px 24px rgba(27,42,74,.28)}
+  header::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;
+                background:rgba(94,131,176,.3)}
+  .kick{font-size:12px;letter-spacing:3px;font-weight:700;color:var(--amber);text-transform:uppercase}
+  h1{font-family:Cambria,Georgia,serif;font-size:30px;margin:8px 0 6px;position:relative;z-index:1}
+  header p{color:#C9D6E8;font-size:15px;max-width:640px;position:relative;z-index:1}
+  .note{background:#fff;border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;
+        padding:14px 18px;margin-top:20px;font-size:14px;color:var(--muted)}
+  .week{margin-top:26px}
+  .week h2{font-family:Cambria,Georgia,serif;color:var(--navy);font-size:20px;display:flex;align-items:center;gap:12px}
+  .week h2 .wtag{background:var(--navy);color:#fff;font-size:12px;font-weight:700;letter-spacing:1px;
+                 padding:4px 11px;border-radius:20px;font-family:'Segoe UI',sans-serif}
+  .week .topic{color:var(--muted);font-size:13.5px;font-weight:400}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  a.card{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:14px;
+         padding:18px 20px;color:var(--ink);box-shadow:0 3px 10px rgba(27,42,74,.06);transition:.15s}
+  a.card:hover{border-color:var(--blueLt);transform:translateY(-2px);box-shadow:0 8px 20px rgba(27,42,74,.12)}
+  a.card .t{font-family:Cambria,Georgia,serif;font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px}
+  a.card .d{font-size:13.5px;color:var(--muted)}
+  a.card .go{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--amberDk)}
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick">BIOL 601 · Research Methods in Biosciences</div>
+    <h1>Interactive Learning Activities</h1>
+    <p>Hands-on, in-browser activities for the MSc course. Click any activity to open it — everything runs in your browser; nothing is saved or sent.</p>
+  </header>
+
+  <div class="note">Tip: these work on a laptop or phone. Use them to revise before class and to prepare for the midterm.</div>
+
+  <div class="week">
+    <h2><span class="wtag">Week 1</span> Science &amp; hypotheses <span class="topic">· the scientific method</span></h2>
+    <div class="cards">
+      <a class="card" href="week01/spot-the-science.html"><div class="t">Spot the Science</div><div class="d">Classify real-sounding claims as science, pseudoscience, or non-science — then catch the AI.</div><span class="go">Open ›</span></a>
+      <a class="card" href="week01/hypothesis-lab.html"><div class="t">Hypothesis Lab</div><div class="d">Flashcards, “is it a hypothesis?”, and naming independent / dependent / controlled variables.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <div class="week">
+    <h2><span class="wtag">Week 2</span> Research ethics <span class="topic">· Belmont, consent, misconduct</span></h2>
+    <div class="cards">
+      <a class="card" href="week02/ethics-lab.html"><div class="t">Ethics Lab</div><div class="d">Flashcards, spot-the-violation scenarios, and an auto-graded bioethics quiz.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <div class="week">
+    <h2><span class="wtag">Weeks 4–5</span> Experimental design <span class="topic">· variables, confounders, the Séralini case</span></h2>
+    <div class="cards">
+      <a class="card" href="week04-05/experimental-design-studio.html"><div class="t">Experimental Design Studio</div><div class="d">Grade a hypothesis, sort variables from confounders, audit Séralini, and build your own design.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <div class="week">
+    <h2><span class="wtag">Week 6</span> Statistics &amp; tests <span class="topic">· significance, test selection</span></h2>
+    <div class="cards">
+      <a class="card" href="week06/significance-explorer.html"><div class="t">Significance Explorer</div><div class="d">Slide effect size, variability, and n to see what makes a difference “real.”</div><span class="go">Open ›</span></a>
+      <a class="card" href="week06/choose-the-right-test.html"><div class="t">Choose the Right Test</div><div class="d">A three-question decision tool plus a scenario quiz, including the Séralini case.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <div class="week">
+    <h2><span class="wtag">Week 7</span> Data quality &amp; assessment <span class="topic">· errors, readiness</span></h2>
+    <div class="cards">
+      <a class="card" href="week07/data-quality-detective.html"><div class="t">Data Quality Detective</div><div class="d">Error vs signal, the quality pillars, and mapping flaws to the Séralini case.</div><span class="go">Open ›</span></a>
+      <a class="card" href="week07/data-readiness-checker.html"><div class="t">Data Readiness Checker</div><div class="d">Classify missing data (MCAR/MAR/MNAR), pick the test, and catch the pitfalls.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <div class="week">
+    <h2><span class="wtag">Week 8</span> Data assessment in practice <span class="topic">· a live mock dataset</span></h2>
+    <div class="cards">
+      <a class="card" href="week08/data-assessment-explorer.html"><div class="t">Data Assessment Explorer</div><div class="d">Scan a real mock dataset, audit its metadata, pick tests, and check the key against reality.</div><span class="go">Open ›</span></a>
+    </div>
+  </div>
+
+  <footer>BIOL 601 · Research Methods in Biosciences — Dr. Wael M. Osman, Khalifa University</footer>
+</div>
+</body>
+</html>
