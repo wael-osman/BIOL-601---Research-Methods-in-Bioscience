@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Choose the Right Test</title>
+<style>
+  :root{
+    --navy:#1B2A4A; --blue:#2E5A88; --blueLt:#5E83B0; --blueTint:#E7EDF5;
+    --amber:#D7991F; --amberDk:#B07B12; --ink:#20262E; --muted:#6B7280;
+    --paper:#FBF7F0; --panel:#F4EEE2; --line:#DED3BF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Calibri,system-ui,sans-serif;background:linear-gradient(160deg,#FBF7F0,#F4EEE2);color:var(--ink);line-height:1.5;padding:24px;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{background:var(--navy);color:#fff;border-radius:18px;padding:26px 30px;box-shadow:0 8px 24px rgba(27,42,74,.28);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(94,131,176,.3)}
+  .kick{font-size:12px;letter-spacing:3px;font-weight:700;color:var(--amber);text-transform:uppercase}
+  h1{font-family:Cambria,Georgia,serif;font-size:30px;margin:6px 0 4px}
+  header p{color:#C9D6E8;font-size:15px;font-style:italic}
+  .tabs{display:flex;gap:8px;margin-top:20px}
+  .tab{flex:1;text-align:center;background:#fff;border:1.5px solid var(--line);border-radius:12px 12px 0 0;padding:14px;font-weight:700;color:var(--muted);cursor:pointer;font-size:15px}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:0 0 16px 16px;padding:24px;box-shadow:0 4px 14px rgba(27,42,74,.06)}
+  .panel{display:none} .panel.active{display:block}
+  h2{font-family:Cambria,Georgia,serif;color:var(--navy);font-size:21px;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .qrow{margin-bottom:18px}
+  .qlabel{font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .qnum{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+  .choices{display:flex;gap:10px;flex-wrap:wrap}
+  .choice{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer;font-size:14px;font-weight:600;color:var(--navy)}
+  .choice:hover{border-color:var(--blueLt)}
+  .choice.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .result{margin-top:20px;border-radius:14px;padding:20px;background:var(--blueTint);border-left:6px solid var(--amber);display:none}
+  .result.show{display:block}
+  .result .test{font-family:Cambria,serif;font-size:26px;font-weight:700;color:var(--navy)}
+  .result .why{font-size:14.5px;margin-top:8px}
+  .result .alt{font-size:13px;color:var(--muted);margin-top:10px}
+  /* quiz */
+  .scenario{background:var(--panel);border-radius:12px;padding:16px 18px;font-size:15px;margin-bottom:14px;border-left:5px solid var(--blue)}
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;margin:6px 0;cursor:pointer;font-size:14px;color:var(--ink)}
+  .opt:hover{border-color:var(--blueLt)}
+  .opt.correct{background:#e6efe2;border-color:#4a8f4a;color:#2f6b2f;font-weight:600}
+  .opt.wrong{background:#fbe6df;border-color:var(--amber);color:var(--amberDk)}
+  .fb{font-size:14px;margin-top:8px;padding:10px 12px;border-radius:8px;background:var(--blueTint);display:none}
+  .fb.show{display:block}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+  button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-radius:10px;padding:10px 18px;cursor:pointer}
+  .btn-amber{background:var(--amber);color:#fff;box-shadow:0 3px 8px rgba(215,153,31,.3)}
+  .btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+  .score{font-family:Cambria,serif;font-size:18px;color:var(--navy);font-weight:700}
+  .progress{font-weight:700;color:var(--muted)}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick">BIOL 601 · Research Methods</div>
+    <h1>Choose the Right Test</h1>
+    <p>Answer three questions to get a recommended test — then prove it on real scenarios, including the Séralini case.</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-p="tool">① Decision Tool</div>
+    <div class="tab" data-p="quiz">② Scenario Quiz</div>
+  </div>
+
+  <div class="card">
+    <!-- DECISION TOOL -->
+    <div class="panel active" id="tool">
+      <h2>Three questions decide the test</h2>
+      <div class="sub">Make a choice in each row; the recommendation updates automatically.</div>
+
+      <div class="qrow">
+        <div class="qlabel"><span class="qnum">1</span>What type of outcome data?</div>
+        <div class="choices" data-group="type">
+          <div class="choice" data-v="continuous">Continuous (measurements)</div>
+          <div class="choice" data-v="categorical">Categorical (counts)</div>
+        </div>
+      </div>
+      <div class="qrow">
+        <div class="qlabel"><span class="qnum">2</span>Is the data approximately normal?</div>
+        <div class="choices" data-group="dist">
+          <div class="choice" data-v="normal">Normal</div>
+          <div class="choice" data-v="nonnormal">Not normal / small n</div>
+        </div>
+      </div>
+      <div class="qrow">
+        <div class="qlabel"><span class="qnum">3</span>How many groups / conditions?</div>
+        <div class="choices" data-group="groups">
+          <div class="choice" data-v="two-ind">Two (independent)</div>
+          <div class="choice" data-v="two-paired">Two (paired)</div>
+          <div class="choice" data-v="three">Three or more</div>
+        </div>
+      </div>
+
+      <div class="result" id="result">
+        <div class="test" id="testName"></div>
+        <div class="why" id="testWhy"></div>
+        <div class="alt" id="testAlt"></div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="panel" id="quiz">
+      <h2>Scenario quiz</h2>
+      <div class="sub">Read each study and choose the most appropriate test.</div>
+      <div class="scenario" id="scenarioText"></div>
+      <div id="quizOpts"></div>
+      <div class="fb" id="quizFb"></div>
+      <div class="row">
+        <div class="progress" id="quizProg"></div>
+        <div>
+          <span class="score" id="quizScore"></span>
+          <button class="btn-amber" id="nextQ" style="margin-left:12px;display:none">Next ›</button>
+          <button class="btn-ghost" id="restartQ" style="margin-left:6px;display:none">Restart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>BIOL 601 · Research Methods in Biosciences — Dr. Wael M. Osman, Khalifa University · Interactive teaching activity</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  // Tabs
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(t){
+    t.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(x){ x.classList.remove("active"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".panel"), function(x){ x.classList.remove("active"); });
+      t.classList.add("active"); $(t.dataset.p).classList.add("active");
+    });
+  });
+
+  // Decision tool
+  var sel = { type:null, dist:null, groups:null };
+  Array.prototype.forEach.call(document.querySelectorAll(".choices"), function(grp){
+    Array.prototype.forEach.call(grp.querySelectorAll(".choice"), function(ch){
+      ch.addEventListener("click", function(){
+        Array.prototype.forEach.call(grp.querySelectorAll(".choice"), function(x){ x.classList.remove("sel"); });
+        ch.classList.add("sel");
+        sel[grp.dataset.group] = ch.dataset.v;
+        recommend();
+      });
+    });
+  });
+
+  function recommend(){
+    if(!sel.type || !sel.dist || !sel.groups) return;
+    var name="", why="", alt="";
+    if(sel.type==="categorical"){
+      name="Chi-square test";
+      why="Categorical (count) data compares observed vs expected frequencies across categories.";
+      alt="Alternative: use Fisher's exact test if the sample is small or any expected cell count is below 5.";
+    } else {
+      // continuous
+      if(sel.groups==="three"){
+        if(sel.dist==="normal"){ name="One-way ANOVA"; why="Three or more groups of normal continuous data — ANOVA tests whether at least one mean differs.";
+          alt="Then run a post-hoc test (Tukey/Bonferroni/Dunnett) to find which groups differ. Use Welch's ANOVA if variances are unequal."; }
+        else { name="Kruskal–Wallis test"; why="Three or more groups of non-normal (or small-n) continuous data — the non-parametric alternative to one-way ANOVA.";
+          alt="Follow with Dunn's test for pairwise comparisons."; }
+      } else if(sel.groups==="two-paired"){
+        if(sel.dist==="normal"){ name="Paired t-test"; why="Two conditions measured in the same subjects, normally distributed — pairing removes between-subject variation.";
+          alt="If not normal, use the Wilcoxon signed-rank test."; }
+        else { name="Wilcoxon signed-rank test"; why="Two paired conditions that are not normal — the non-parametric paired comparison.";
+          alt="Parametric equivalent: the paired t-test (if data were normal)."; }
+      } else { // two-ind
+        if(sel.dist==="normal"){ name="Independent (unpaired) t-test"; why="Two independent groups of normal continuous data.";
+          alt="Use Welch's t-test if the variances are unequal; Mann–Whitney if not normal."; }
+        else { name="Mann–Whitney U test"; why="Two independent groups that are not normal (or small n) — the non-parametric unpaired comparison.";
+          alt="Parametric equivalent: the unpaired t-test (if data were normal)."; }
+      }
+    }
+    $("testName").textContent = name;
+    $("testWhy").textContent = why;
+    $("testAlt").textContent = alt;
+    $("result").classList.add("show");
+  }
+
+  // Scenario quiz
+  var SCN = [
+    {s:"A team measures blood glucose (mg/dL) in the SAME 20 patients before and after a drug. Data are roughly normal.",
+     opts:["Paired t-test","Unpaired t-test","Chi-square test","One-way ANOVA"], correct:0,
+     fb:"Same subjects, two time points, normal continuous data → paired t-test. Pairing removes between-subject variation."},
+    {s:"Researchers compare mean tumour volume across FOUR drug doses (separate animals per dose); data are normally distributed.",
+     opts:["Multiple t-tests","One-way ANOVA + post-hoc","Chi-square test","Paired t-test"], correct:1,
+     fb:"Four groups of normal continuous data → one-way ANOVA, then a post-hoc test to locate the differences. Running many t-tests would inflate the false-positive rate."},
+    {s:"A study asks whether disease status (yes/no) is associated with genotype (AA/Aa/aa) — all counts.",
+     opts:["t-test","ANOVA","Chi-square test","Pearson correlation"], correct:2,
+     fb:"Two categorical variables and count data → chi-square test of association (use Fisher's exact if expected counts are low)."},
+    {s:"Two independent groups of 6 mice each show clearly non-normal enzyme activity with outliers.",
+     opts:["Unpaired t-test","Mann–Whitney U test","Chi-square test","Two-way ANOVA"], correct:1,
+     fb:"Two independent groups, small n and non-normal → Mann–Whitney U, the non-parametric alternative to the unpaired t-test."},
+    {s:"The Séralini study compared tumour incidence between treated and control rats using n = 10 of a tumour-prone strain, with no formal multiple-comparison correction.",
+     opts:["A single t-test is clearly sufficient","An adequately powered design with an appropriate incidence analysis and multiple-comparison correction","Chi-square with expected counts of 1","No statistics are needed if the images are dramatic"], correct:1,
+     fb:"The core failure was design and analysis: tiny n, a tumour-prone strain, and no correction. A defensible approach needs adequate power, an appropriate incidence/survival analysis, and correction for multiple comparisons — not selective comparisons or photographs."}
+  ];
+  var qi=0, qScore=0, qLocked=false;
+  function renderScenario(){
+    qLocked=false;
+    var sc=SCN[qi];
+    $("scenarioText").textContent = sc.s;
+    var area=$("quizOpts"); area.innerHTML="";
+    sc.opts.forEach(function(opt,oi){
+      var b=document.createElement("button"); b.className="opt"; b.textContent=opt;
+      b.addEventListener("click", function(){
+        if(qLocked) return; qLocked=true;
+        var children = area.querySelectorAll(".opt");
+        if(oi===sc.correct){ b.classList.add("correct"); qScore++; }
+        else { b.classList.add("wrong"); children[sc.correct].classList.add("correct"); }
+        $("quizFb").textContent = sc.fb; $("quizFb").classList.add("show");
+        if(qi<SCN.length-1){ $("nextQ").style.display="inline-block"; $("quizScore").textContent="Score: "+qScore+" / "+SCN.length; }
+        else { $("restartQ").style.display="inline-block"; $("quizScore").textContent="Final: "+qScore+" / "+SCN.length+(qScore===SCN.length?" — perfect!":""); }
+      });
+      area.appendChild(b);
+    });
+    $("quizFb").classList.remove("show");
+    $("nextQ").style.display="none";
+    $("quizProg").textContent = "Scenario "+(qi+1)+" of "+SCN.length;
+  }
+  $("nextQ").addEventListener("click", function(){ if(qi<SCN.length-1){ qi++; renderScenario(); } });
+  $("restartQ").addEventListener("click", function(){ qi=0; qScore=0; $("restartQ").style.display="none"; $("quizScore").textContent=""; renderScenario(); });
+
+  function init(){ renderScenario(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>

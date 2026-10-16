@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Ethics Lab</title>
+<style>
+  :root{--navy:#20304B;--slate:#3E5C76;--amber:#C9852B;--teal:#3F8E8C;--light:#F4F6F8;--ink:#1E2A3A;--mute:#6B7785;--line:#DDE4EA;--good:#2E8B6F;--bad:#C24A37;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Calibri,'Segoe UI',Arial,sans-serif;color:var(--ink);background:var(--light)}
+  header{background:var(--navy);color:#fff;padding:26px 28px}
+  header .kick{color:#B9C6D6;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+  header h1{margin:6px 0 2px;font-family:Cambria,Georgia,serif;font-size:28px}
+  header p{margin:0;color:#C3D0DE;font-size:14px}
+  .tabs{display:flex;gap:6px;padding:14px 28px 0;background:var(--navy);flex-wrap:wrap}
+  .tab{background:#2A3D5A;color:#C3D0DE;border:none;padding:11px 20px;border-radius:10px 10px 0 0;font-size:15px;font-weight:600;cursor:pointer}
+  .tab.active{background:var(--light);color:var(--navy)}
+  main{max-width:880px;margin:0 auto;padding:28px}
+  .panel{display:none}.panel.active{display:block}
+  .lead{color:var(--mute);font-size:15px;margin:0 0 18px}
+  .btn{background:var(--slate);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:15px;font-weight:600;cursor:pointer}
+  .btn:hover{filter:brightness(1.08)}.btn.ghost{background:#fff;color:var(--slate);border:1.5px solid var(--slate)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.counter{color:var(--mute);font-size:14px}
+  .fc{background:#fff;border:1px solid var(--line);border-radius:16px;min-height:200px;display:flex;align-items:center;justify-content:center;text-align:center;padding:34px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.06);user-select:none}
+  .fc .term{font-family:Cambria,Georgia,serif;font-size:25px;font-weight:700;color:var(--slate)}
+  .fc .ans{font-size:18px;color:var(--ink);line-height:1.4}
+  .fcwrap{position:relative}.hint{position:absolute;bottom:12px;right:16px;font-size:12px;color:var(--mute)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card .ask{font-size:14px;color:var(--mute)}
+  .stmt{font-family:Cambria,Georgia,serif;font-size:21px;line-height:1.4;color:var(--ink);margin:8px 0 4px}
+  .choices{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .choice{flex:1 1 40%;min-width:150px;padding:13px;border:1.5px solid var(--line);border-radius:11px;background:#fff;font-size:15px;font-weight:600;cursor:pointer;text-align:center;color:var(--ink)}
+  .choice:hover{border-color:var(--slate)}.choice.correct{border-color:var(--good);background:#EAF6F1;color:var(--good)}.choice.wrong{border-color:var(--bad);background:#FBEDEA;color:var(--bad)}
+  .fb{margin-top:14px;font-size:15px;min-height:22px}.fb b.g{color:var(--good)}.fb b.r{color:var(--bad)}.why{color:var(--mute)}
+  .next-row{margin-top:18px;display:flex;gap:10px;align-items:center}
+  .q{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+  .q .qt{font-weight:700;margin:0 0 12px}
+  .opt{display:block;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;margin:7px 0;cursor:pointer}
+  .opt:hover{border-color:var(--slate)}.opt input{margin-right:9px}
+  .opt.correct{border-color:var(--good);background:#EAF6F1}.opt.wrong{border-color:var(--bad);background:#FBEDEA}
+  .exp{margin-top:10px;font-size:14px;color:var(--mute);display:none}.exp.show{display:block}
+  .scorebar{background:var(--navy);color:#fff;border-radius:12px;padding:16px 20px;font-size:18px;font-weight:700;margin-bottom:18px;display:none}.scorebar.show{display:block}
+  .done{font-size:18px;font-weight:700;color:var(--slate)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kick">BIOL 601 · Research Methods · Week 2</div>
+  <h1>Ethics Lab — Introduction to Bioethics</h1>
+  <p>Flashcards · spot the violation · auto-graded quiz. Nothing is saved or sent.</p>
+</header>
+<div class="tabs">
+  <button class="tab active" data-tab="cards">Flashcards</button>
+  <button class="tab" data-tab="spot">Spot the violation</button>
+  <button class="tab" data-tab="quiz">Quiz</button>
+</div>
+<main>
+  <section class="panel active" id="cards">
+    <p class="lead">Click the card to flip it.</p>
+    <div class="fcwrap"><div class="fc" id="fc"><span class="content"></span><span class="hint">click to flip</span></div></div>
+    <div class="row" style="margin-top:16px;justify-content:space-between">
+      <div class="row"><button class="btn ghost" id="prev">‹ Prev</button><button class="btn ghost" id="next">Next ›</button><button class="btn" id="shuffle">Shuffle</button></div>
+      <span class="counter" id="fcount"></span>
+    </div>
+  </section>
+  <section class="panel" id="spot"><p class="lead">Which principle does each scenario most clearly violate?</p><div id="spotBody"></div></section>
+  <section class="panel" id="quiz">
+    <p class="lead">Answer all, then check.</p>
+    <div class="scorebar" id="score"></div><div id="qlist"></div>
+    <div class="row"><button class="btn" id="check" style="background:var(--amber)">Check answers</button><button class="btn ghost" id="resetq">Reset</button></div>
+  </section>
+</main>
+
+<script>
+var FLASH=[
+ ["Bioethics","The study of ethical issues raised by the life sciences."],
+ ["Autonomy","Respect a person's right to decide for themselves; basis of consent."],
+ ["Beneficence","Act for the good and benefit of others."],
+ ["Non-maleficence","\u2018First, do no harm.\u2019"],
+ ["Justice","Distribute the benefits and burdens of research fairly."],
+ ["Nuremberg Code (1947)","After Nazi medical crimes; voluntary consent is essential."],
+ ["Declaration of Helsinki (1964)","Medical-research ethics; protections for the vulnerable."],
+ ["Belmont Report (1979)","Respect, beneficence, justice; basis of the IRB system."],
+ ["Informed consent","Voluntary agreement based on understanding purpose, risks, benefits."],
+ ["Tuskegee study","Untreated syphilis study; treatment withheld; a landmark failure."],
+ ["Henrietta Lacks / HeLa","Immortal cell line taken without consent; consent & tissue-rights questions."],
+ ["FFP","Fabrication, falsification, plagiarism — the cardinal forms of misconduct."],
+ ["IRB","Independent committee that reviews and oversees research with people."]
+];
+var PRIN=["Autonomy","Beneficence","Non-maleficence","Justice"];
+var SPOT=[
+ ["A researcher enrols patients without telling them the study's real purpose.","Autonomy","They cannot freely choose without the truth."],
+ ["A trial keeps giving a treatment now known to be harmful.","Non-maleficence","Continuing known harm breaks \u2018do no harm.\u2019"],
+ ["A beneficial trial therapy is offered only to wealthy participants.","Justice","Benefits and burdens must be shared fairly."],
+ ["Researchers could easily relieve participants' suffering but don't bother.","Beneficence","Failing to act for their good."],
+ ["A consent form is written in jargon the participant cannot understand.","Autonomy","Without understanding there is no real consent."],
+ ["A study exposes participants to serious risk with no safeguards.","Non-maleficence","Avoidable harm is imposed."],
+ ["One community bears all the risks while another reaps the benefits.","Justice","An unfair distribution of burden and benefit."],
+ ["Tissue is reused for new research the donor never agreed to.","Autonomy","Use beyond consent overrides the person's choice."]
+];
+var QUIZ=[
+ ["Respect for a participant's right to decide for themselves is:",["Beneficence","Autonomy","Justice","Non-maleficence"],1,"Autonomy."],
+ ["\u2018First, do no harm\u2019 is:",["Autonomy","Justice","Non-maleficence","Beneficence"],2,"Non-maleficence."],
+ ["The 1947 code establishing voluntary consent is the:",["Belmont Report","Declaration of Helsinki","Nuremberg Code","Geneva Convention"],2,"Nuremberg Code."],
+ ["The Belmont Report (1979) is the foundation of:",["Peer review","The IRB system","Clinical trials","The Nobel Prize"],1,"The IRB system."],
+ ["The HeLa cell line raises ethical questions mainly about:",["Animal welfare","Consent and tissue rights","Statistics","Peer review"],1,"Consent and tissue rights."],
+ ["\u2018FFP\u2019 stands for:",["Funding, fees, profit","Fabrication, falsification, plagiarism","Fairness, freedom, privacy","Form, function, process"],1,"Fabrication, falsification, plagiarism."],
+ ["Offering a beneficial therapy only to wealthy patients violates:",["Autonomy","Non-maleficence","Justice","Beneficence"],2,"Justice."],
+ ["A consent form full of impenetrable jargon undermines:",["Justice","Autonomy","Beneficence","Reproducibility"],1,"Autonomy — no true understanding."]
+];
+
+document.querySelectorAll('.tab').forEach(function(t){t.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');};});
+
+var deck=FLASH.slice(),fi=0,flip=false;var fc=document.getElementById('fc'),fcC=fc.querySelector('.content');
+function rc(){flip=false;fcC.className='content term';fcC.textContent=deck[fi][0];document.getElementById('fcount').textContent=(fi+1)+' / '+deck.length;}
+fc.onclick=function(){flip=!flip;if(flip){fcC.className='content ans';fcC.textContent=deck[fi][1];}else{fcC.className='content term';fcC.textContent=deck[fi][0];}};
+document.getElementById('next').onclick=function(){fi=(fi+1)%deck.length;rc();};
+document.getElementById('prev').onclick=function(){fi=(fi-1+deck.length)%deck.length;rc();};
+document.getElementById('shuffle').onclick=function(){for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=deck[i];deck[i]=deck[j];deck[j]=t;}fi=0;rc();};
+rc();
+
+var si=0,sScore=0,sLock=false;var sb_=document.getElementById('spotBody');
+function showSpot(){
+  if(si>=SPOT.length){sb_.innerHTML='<div class="card"><div class="done">Done! You scored '+sScore+' / '+SPOT.length+'.</div></div><div class="next-row"><button class="btn ghost" id="sR">Restart</button></div>';document.getElementById('sR').onclick=function(){si=0;sScore=0;showSpot();};return;}
+  sLock=false;var it=SPOT[si];
+  var btns=PRIN.map(function(p){return '<button class="choice" data-v="'+p+'">'+p+'</button>';}).join('');
+  sb_.innerHTML='<div class="card"><div class="ask">Scenario:</div><div class="stmt">\u201C'+it[0]+'\u201D</div><div class="choices">'+btns+'</div><div class="fb" id="sfb"></div></div><div class="next-row"><button class="btn" id="snext" style="display:none">Next \u203A</button><span class="counter">Scenario '+(si+1)+' of '+SPOT.length+'  ·  score '+sScore+'</span></div>';
+  sb_.querySelectorAll('.choice').forEach(function(b){b.onclick=function(){
+    if(sLock)return;sLock=true;var picked=b.dataset.v,correct=it[1];
+    sb_.querySelectorAll('.choice').forEach(function(x){if(x.dataset.v===correct)x.classList.add('correct');});
+    var fb=document.getElementById('sfb');
+    if(picked===correct){sScore++;fb.innerHTML='<b class="g">Correct.</b> <span class="why">'+it[2]+'</span>';}
+    else{b.classList.add('wrong');fb.innerHTML='<b class="r">Most clearly: '+correct+'.</b> <span class="why">'+it[2]+'</span>';}
+    var nx=document.getElementById('snext');nx.style.display='inline-block';nx.onclick=function(){si++;showSpot();};
+  };});
+}
+showSpot();
+
+var qlist=document.getElementById('qlist');
+function buildQuiz(){qlist.innerHTML='';QUIZ.forEach(function(item,qi){var d=document.createElement('div');d.className='q';d.id='q'+qi;var h=document.createElement('p');h.className='qt';h.textContent=(qi+1)+'. '+item[0];d.appendChild(h);item[1].forEach(function(opt,oi){var l=document.createElement('label');l.className='opt';l.innerHTML='<input type="radio" name="q'+qi+'" value="'+oi+'">'+opt;d.appendChild(l);});var e=document.createElement('div');e.className='exp';e.textContent='Answer: '+item[3];d.appendChild(e);qlist.appendChild(d);});}
+document.getElementById('check').onclick=function(){var correct=0;QUIZ.forEach(function(item,qi){var chosen=document.querySelector('input[name="q'+qi+'"]:checked');var labels=document.querySelectorAll('#q'+qi+' .opt');labels.forEach(function(l){l.classList.remove('correct','wrong');});labels[item[2]].classList.add('correct');if(chosen){var ci=parseInt(chosen.value,10);if(ci===item[2])correct++;else labels[ci].classList.add('wrong');}document.querySelector('#q'+qi+' .exp').classList.add('show');});var s=document.getElementById('score');s.classList.add('show');s.textContent='You scored '+correct+' / '+QUIZ.length+'.  '+(correct===QUIZ.length?'Excellent.':correct>=6?'Strong — review the misses.':'Revisit the flashcards and try again.');s.scrollIntoView({behavior:'smooth',block:'center'});};
+document.getElementById('resetq').onclick=function(){buildQuiz();document.getElementById('score').classList.remove('show');};
+buildQuiz();
+</script>
+</body>
+</html>

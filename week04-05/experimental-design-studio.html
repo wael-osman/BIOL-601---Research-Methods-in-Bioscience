@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experimental Design Studio · BIOL 601</title>
+<style>
+  :root{
+    --dark:#1E2A44; --blue:#2F5C9E; --accent:#D08A2C; --slate:#5B7BA6;
+    --paper:#F4F2EC; --card:#FFFFFF; --ink:#1F2733; --mute:#5E6675;
+    --line:#D8D3C7; --bluet:#E4EAF2; --ambt:#F6EAD4;
+    --good:#3E7C5A; --goodt:#E2EEE6; --warn:#B5462F; --warnt:#F4E0D9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Calibri,'Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;padding:24px 16px 64px}
+  .wrap{max-width:940px;margin:0 auto}
+  h1,h2,h3,h4,.kicker{font-family:Cambria,Georgia,serif}
+  .kicker{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px}
+  header h1{font-size:2rem;color:var(--dark);line-height:1.15;margin-bottom:8px}
+  .lede{color:var(--ink);font-size:1.02rem;max-width:780px}
+  .case{background:var(--ambt);border-left:5px solid var(--accent);border-radius:8px;padding:13px 18px;margin:16px 0 22px;font-size:.95rem}
+  .case b{color:var(--dark)}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--line);padding-bottom:2px}
+  .tab{font-family:Cambria,serif;font-size:.92rem;font-weight:700;color:var(--mute);background:none;border:none;padding:10px 15px;cursor:pointer;border-radius:8px 8px 0 0;transition:.15s}
+  .tab:hover{color:var(--blue);background:var(--bluet)}
+  .tab.active{color:#fff;background:var(--blue)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(30,42,68,.05)}
+  h2{font-size:1.3rem;color:var(--dark);margin-bottom:4px}
+  h2 .sub{display:block;font-family:Calibri,sans-serif;font-weight:400;font-size:.9rem;color:var(--mute);margin-top:3px}
+  .chip{display:inline-block;border:1.5px solid var(--line);background:var(--card);border-radius:22px;padding:8px 15px;margin:5px 6px 5px 0;font-size:.9rem;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--blue);background:var(--bluet)}
+  .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .rubric{margin-top:14px;display:grid;grid-template-columns:1fr;gap:8px}
+  .crit{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:9px;background:var(--paper);font-size:.93rem}
+  .crit .mk{font-weight:700;font-family:Cambria,serif;min-width:18px}
+  .crit.yes{background:var(--goodt)} .crit.yes .mk{color:var(--good)}
+  .crit.no{background:var(--warnt)} .crit.no .mk{color:var(--warn)}
+  .revised{margin-top:12px;border-left:5px solid var(--good);background:var(--goodt);border-radius:9px;padding:12px 15px;font-size:.95rem}
+  .revised b{color:var(--good);font-family:Cambria,serif}
+  .factor{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:var(--card);flex-wrap:wrap}
+  .factor span{font-size:.95rem}
+  select{font-family:Calibri,sans-serif;font-size:.88rem;padding:6px 9px;border:1.5px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  select.right{border-color:var(--good);background:var(--goodt)}
+  select.wrong{border-color:var(--warn);background:var(--warnt)}
+  .btn{font-family:Cambria,serif;font-weight:700;font-size:.92rem;color:#fff;background:var(--blue);border:none;border-radius:9px;padding:11px 20px;cursor:pointer;transition:.15s;margin-top:6px}
+  .btn:hover{background:var(--dark)}
+  .btn.alt{background:var(--accent)} .btn.alt:hover{background:#b5742180}
+  .ghost{background:none;color:var(--blue);border:1.5px solid var(--blue)}
+  .ghost:hover{background:var(--bluet);color:var(--dark)}
+  .score{font-family:Cambria,serif;font-size:1.05rem;color:var(--dark);margin-top:12px;padding:10px 14px;border-radius:9px;background:var(--bluet)}
+  .score b{font-size:1.35rem;color:var(--blue)}
+  .flaw{padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--card)}
+  .flaw .q{font-size:.95rem;margin-bottom:8px}
+  .flaw .opts{display:flex;gap:8px}
+  .toggle{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-align:center;transition:.15s}
+  .toggle.sel{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .flaw .exp{margin-top:9px;font-size:.9rem;padding:9px 12px;border-radius:8px;display:none}
+  .flaw.revealed .exp{display:block}
+  .flaw.revealed .exp.flaw-x{background:var(--warnt)} .flaw.revealed .exp.ok-x{background:var(--goodt)}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-weight:600;font-size:.9rem;margin-bottom:5px;color:var(--dark)}
+  .field input,.field textarea{width:100%;font-family:Calibri,sans-serif;font-size:.92rem;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);resize:vertical}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--blue)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+  .feedback{margin-top:14px}
+  .fb{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-radius:9px;margin-bottom:8px;font-size:.92rem}
+  .fb.ok{background:var(--goodt)} .fb.ok .mk{color:var(--good)}
+  .fb.warn{background:var(--ambt)} .fb.warn .mk{color:var(--accent)}
+  .fb .mk{font-weight:700;font-family:Cambria,serif}
+  footer{text-align:center;color:var(--mute);font-size:.8rem;margin-top:26px}
+  .pill{display:inline-block;background:var(--dark);color:#fff;font-size:.7rem;letter-spacing:.05em;padding:3px 10px;border-radius:20px;font-family:Cambria,serif}
+  .hint{font-size:.85rem;color:var(--mute);margin-top:6px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">BIOL 601 · Research Methods in Biosciences · Weeks 4–5</div>
+    <h1>Experimental Design Studio</h1>
+    <p class="lede">Four hands-on stations that turn the unit's principles into practice: grade a hypothesis, sort variables from confounders, audit the Séralini study, and pressure-test a design of your own.</p>
+    <div class="case"><b>The through-line.</b> Every station points back to one real, retracted study — Séralini et al. on GM maize and Roundup — the cautionary tale behind why design choices decide whether a result can be believed.</div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-p="grade">① Hypothesis Grader</button>
+    <button class="tab" data-p="sort">② Variable Sorter</button>
+    <button class="tab" data-p="flaw">③ Séralini Flaw-Finder</button>
+    <button class="tab" data-p="build">④ Design Builder</button>
+  </div>
+
+  <!-- 1 HYPOTHESIS GRADER -->
+  <section class="panel active" id="grade">
+    <div class="card">
+      <h2>Grade a hypothesis<span class="sub">Pick one. See how it scores against four marks of a good hypothesis — then a stronger rewrite.</span></h2>
+      <div id="hypChips"></div>
+      <div id="hypResult"></div>
+    </div>
+  </section>
+
+  <!-- 2 VARIABLE SORTER -->
+  <section class="panel" id="sort">
+    <div class="card">
+      <h2>Sort the variables<span class="sub">Scenario: does high chronic stress lower influenza-vaccine antibody titre at 4 weeks? Assign every factor.</span></h2>
+      <div id="factorList"></div>
+      <button class="btn" id="checkSort">Check my answers</button>
+      <button class="btn ghost" id="resetSort">Reset</button>
+      <div id="sortScore"></div>
+      <p class="hint">Anything that isn't the variable you change (IV) or measure (DV), and isn't held constant, is a confounder waiting to happen.</p>
+    </div>
+  </section>
+
+  <!-- 3 SERALINI FLAW-FINDER -->
+  <section class="panel" id="flaw">
+    <div class="card">
+      <h2>Audit the Séralini design<span class="sub">For each design decision, judge it: sound or a red flag? Then reveal the verdict.</span></h2>
+      <div id="flawList"></div>
+      <button class="btn alt" id="revealFlaws">Reveal verdicts &amp; score</button>
+      <button class="btn ghost" id="resetFlaws">Reset</button>
+      <div id="flawScore"></div>
+    </div>
+  </section>
+
+  <!-- 4 DESIGN BUILDER -->
+  <section class="panel" id="build">
+    <div class="card">
+      <h2>Build &amp; pressure-test a design<span class="sub">Mirror the worksheet. Fill what you can, then get a completeness &amp; rigour check — coaching, not grading.</span></h2>
+      <div class="field"><label>Research question</label><input id="b_q" placeholder="In [population], does [intervention] vs [comparison] affect [outcome] over [time]?"></div>
+      <div class="grid2">
+        <div class="field"><label>Null hypothesis (H₀)</label><textarea id="b_h0" rows="2" placeholder="No effect / no difference…"></textarea></div>
+        <div class="field"><label>Alternative hypothesis (H₁)</label><textarea id="b_h1" rows="2" placeholder="States the expected relationship (and direction)…"></textarea></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Independent variable (what you change)</label><input id="b_iv"></div>
+        <div class="field"><label>Dependent variable (what you measure)</label><input id="b_dv"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Controlled variables</label><input id="b_ctrl" placeholder="held constant across groups"></div>
+        <div class="field"><label>Control / comparison group</label><input id="b_cg" placeholder="e.g. low-stress group; placebo; wild-type"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Biological replicates per group (number)</label><input id="b_n" placeholder="e.g. 20"></div>
+        <div class="field"><label>Ethics pathway</label><input id="b_eth" placeholder="IRB / IACUC / neither"></div>
+      </div>
+      <button class="btn" id="reviewBuild">Review my design</button>
+      <div id="buildFeedback" class="feedback"></div>
+    </div>
+  </section>
+
+  <footer><span class="pill">Experimental Design Studio</span> &nbsp; BIOL 601 · Dr. Wael M. Osman · Khalifa University</footer>
+</div>
+
+<script>
+/* ---------- tabs ---------- */
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab'); if (!b) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById(b.dataset.p).classList.add('active');
+});
+
+/* ---------- 1. hypothesis grader ---------- */
+const HYPS = [
+  { t: "Gene X is important for cell division.", crit: [false,false,false,false],
+    revised: "Knockdown of Gene X reduces proliferation rate in HeLa cells by ≥30% over 72 h." },
+  { t: "Stress affects health.", crit: [false,false,false,false],
+    revised: "Adults with high perceived-stress scores show lower influenza-vaccine antibody titres at 4 weeks than low-stress adults." },
+  { t: "Social media use is bad for mental health.", crit: [false,false,false,false],
+    revised: "Daily social-media use exceeding 3 h is associated with higher depression-scale scores in undergraduates." },
+  { t: "High chronic stress lowers 4-week antibody titre vs low stress.", crit: [true,true,true,true],
+    revised: "Already strong — specific population, named measure, clear variables, and a stated direction." },
+  { t: "miR-34a expression differs between tumour and normal tissue.", crit: [true,true,true,false],
+    revised: "Add direction if theory supports it: ‘miR-34a is lower in tumour than matched normal tissue.’" },
+];
+const CRIT_LABELS = [
+  ["Specific & measurable", "Names a concrete, quantifiable outcome — not “affects” or “is important.”"],
+  ["Testable & falsifiable", "An experiment could realistically support or refute it."],
+  ["Variables identifiable", "Independent, dependent, and population are all clear."],
+  ["Direction stated", "Predicts which way the effect goes (where theory allows)."],
+];
+const hypChips = document.getElementById('hypChips');
+HYPS.forEach((h, i) => {
+  const c = document.createElement('span'); c.className = 'chip'; c.textContent = h.t; c.dataset.i = i;
+  c.onclick = () => gradeHyp(i); hypChips.appendChild(c);
+});
+function gradeHyp(i) {
+  document.querySelectorAll('#hypChips .chip').forEach(c => c.classList.toggle('on', +c.dataset.i === i));
+  const h = HYPS[i];
+  const score = h.crit.filter(Boolean).length;
+  let html = '<div class="rubric">';
+  CRIT_LABELS.forEach((cl, k) => {
+    const met = h.crit[k];
+    html += `<div class="crit ${met?'yes':'no'}"><span class="mk">${met?'✓':'✗'}</span><span><b>${cl[0]}</b> — ${cl[1]}</span></div>`;
+  });
+  html += '</div>';
+  html += `<div class="score">Score: <b>${score}/4</b> ${score===4?'— ready to test.':score>=2?'— on the way; tighten the gaps.':'— needs a rewrite.'}</div>`;
+  html += `<div class="revised"><b>Stronger version →</b> ${h.revised}</div>`;
+  document.getElementById('hypResult').innerHTML = html;
+}
+
+/* ---------- 2. variable sorter ---------- */
+const FACTORS = [
+  { f: "Chronic stress level (high vs low)", a: "IV" },
+  { f: "Antibody titre at 4 weeks", a: "DV" },
+  { f: "Influenza vaccine lot/batch", a: "Controlled" },
+  { f: "Participant age band", a: "Controlled" },
+  { f: "Assay protocol (same ELISA)", a: "Controlled" },
+  { f: "Prior flu exposure (unmeasured)", a: "Confounder" },
+  { f: "Sleep quality (unaccounted for)", a: "Confounder" },
+];
+const ROLES = ["IV","DV","Controlled","Confounder"];
+const factorList = document.getElementById('factorList');
+function buildFactors() {
+  factorList.innerHTML = '';
+  FACTORS.forEach((x, i) => {
+    const row = document.createElement('div'); row.className = 'factor';
+    const sel = `<select id="f${i}"><option value="">— choose —</option>${ROLES.map(r=>`<option value="${r}">${r}</option>`).join('')}</select>`;
+    row.innerHTML = `<span>${x.f}</span>${sel}`;
+    factorList.appendChild(row);
+  });
+}
+buildFactors();
+document.getElementById('checkSort').onclick = () => {
+  let correct = 0;
+  FACTORS.forEach((x, i) => {
+    const sel = document.getElementById('f'+i);
+    sel.classList.remove('right','wrong');
+    if (!sel.value) return;
+    if (sel.value === x.a) { sel.classList.add('right'); correct++; }
+    else sel.classList.add('wrong');
+  });
+  document.getElementById('sortScore').innerHTML =
+    `<div class="score">Correct: <b>${correct}/${FACTORS.length}</b> — green is right, red is mis-assigned. The two confounders are the ones no design step has tamed.</div>`;
+};
+document.getElementById('resetSort').onclick = () => { buildFactors(); document.getElementById('sortScore').innerHTML=''; };
+
+/* ---------- 3. seralini flaw-finder ---------- */
+const FLAWS = [
+  { q: "Used ~10 rats per sex per group for a 2-year cancer study.", flaw: true, exp: "Red flag — far too few for a carcinogenicity endpoint, especially in a tumour-prone strain. Underpowered." },
+  { q: "Compared one control group against nine treatment arms.", flaw: true, exp: "Red flag — imbalanced controls plus many endpoints inflate the false-positive rate without multiplicity control." },
+  { q: "Chose the Sprague-Dawley strain for a 2-year study.", flaw: true, exp: "Red flag — this strain develops tumours spontaneously with age, a built-in confounder for a cancer claim." },
+  { q: "Measured tumour incidence as an outcome.", flaw: false, exp: "Sound in principle — tumour incidence is a legitimate outcome; the problem is the design around it, not the endpoint itself." },
+  { q: "Reported randomisation and blinding only vaguely.", flaw: true, exp: "Red flag — without clear randomisation and blinding, allocation and assessment bias cannot be excluded." },
+  { q: "Tested a Roundup formulation rather than glyphosate alone.", flaw: true, exp: "Red flag — the independent variable is not cleanly defined; effects cannot be attributed to a specific component." },
+  { q: "Published in a peer-reviewed journal.", flaw: false, exp: "Not itself a flaw — peer review is appropriate; the issue was that design and analysis problems still passed through." },
+];
+const flawList = document.getElementById('flawList');
+function buildFlaws() {
+  flawList.innerHTML = '';
+  FLAWS.forEach((x, i) => {
+    const d = document.createElement('div'); d.className = 'flaw'; d.id = 'flaw'+i;
+    d.innerHTML = `<div class="q">${x.q}</div>
+      <div class="opts">
+        <div class="toggle" data-i="${i}" data-v="ok">Sound</div>
+        <div class="toggle" data-i="${i}" data-v="flaw">Red flag</div>
+      </div>
+      <div class="exp ${x.flaw?'flaw-x':'ok-x'}"><b>${x.flaw?'Red flag.':'Sound.'}</b> ${x.exp}</div>`;
+    flawList.appendChild(d);
+  });
+  flawList.querySelectorAll('.toggle').forEach(t => t.onclick = () => {
+    const i = t.dataset.i;
+    flawList.querySelectorAll(`.toggle[data-i="${i}"]`).forEach(o => o.classList.remove('sel'));
+    t.classList.add('sel');
+  });
+}
+buildFlaws();
+document.getElementById('revealFlaws').onclick = () => {
+  let correct = 0, answered = 0;
+  FLAWS.forEach((x, i) => {
+    const sel = flawList.querySelector(`#flaw${i} .toggle.sel`);
+    document.getElementById('flaw'+i).classList.add('revealed');
+    if (!sel) return; answered++;
+    const guess = sel.dataset.v === 'flaw';
+    if (guess === x.flaw) correct++;
+  });
+  const flawsTotal = FLAWS.filter(f=>f.flaw).length;
+  document.getElementById('flawScore').innerHTML =
+    `<div class="score">You matched <b>${correct}/${FLAWS.length}</b> verdicts. The study carried <b>${flawsTotal}</b> design red flags — any one weakens it; together they made the central claim unsupportable.</div>`;
+};
+document.getElementById('resetFlaws').onclick = () => { buildFlaws(); document.getElementById('flawScore').innerHTML=''; };
+
+/* ---------- 4. design builder ---------- */
+const DIR_WORDS = ['increase','decrease','higher','lower','reduce','raise','more','less','greater','fewer','improve','worsen','enhance','suppress','lowers','raises','reduces'];
+function val(id){ return (document.getElementById(id).value || '').trim(); }
+document.getElementById('reviewBuild').onclick = () => {
+  const q=val('b_q'), h0=val('b_h0'), h1=val('b_h1'), iv=val('b_iv'), dv=val('b_dv'),
+        ctrl=val('b_ctrl'), cg=val('b_cg'), n=val('b_n'), eth=val('b_eth');
+  const fb = [];
+  const ok = (t)=>fb.push({k:'ok',t}); const warn=(t)=>fb.push({k:'warn',t});
+
+  q ? ok('Research question stated — check it names a population, comparison, and outcome.') : warn('No research question yet. Start there; everything else follows from it.');
+  if (h0 && h1) ok('Both hypotheses present (H₀ and H₁).'); else warn('State both H₀ and H₁ — the null is what your test actually evaluates.');
+  if (h1) {
+    const hasDir = DIR_WORDS.some(w => h1.toLowerCase().includes(w));
+    hasDir ? ok('H₁ states a direction — good when theory supports one.') : warn('H₁ has no clear direction word (e.g. “lower”, “increases”). Add one if your theory predicts a direction.');
+  }
+  (iv && dv) ? ok('Independent and dependent variables both defined.') : warn('Name both the variable you change (IV) and the one you measure (DV).');
+  ctrl ? ok('Controlled variables listed — these are what keep confounders out.') : warn('List controlled variables; un-held factors become confounders (the Séralini strain problem).');
+  cg ? ok('Comparison/control group specified — the baseline your claim rests on.') : warn('Define a control or comparison group; without it you cannot attribute cause.');
+  const nn = parseInt(n, 10);
+  if (!n) warn('Add a replicate number. Even conceptually, ask whether it could detect your expected effect.');
+  else if (isNaN(nn)) warn('Replicates should be a number.');
+  else if (nn < 10) warn(`Only ${nn} per group — likely underpowered. Séralini’s ~10/group is the cautionary example; justify or increase it.`);
+  else ok(`${nn} replicates per group — reasonable starting point; confirm against your expected effect size.`);
+  eth ? ok('Ethics pathway identified.') : warn('Identify the ethics pathway (IRB for humans, IACUC for animals) before any work begins.');
+
+  const okCount = fb.filter(x=>x.k==='ok').length;
+  let html = `<div class="score">Completeness &amp; rigour: <b>${okCount}/9</b> checks clear.</div>`;
+  fb.forEach(x => html += `<div class="fb ${x.k}"><span class="mk">${x.k==='ok'?'✓':'!'}</span><span>${x.t}</span></div>`);
+  html += '<p class="hint">This is a coaching check on completeness and common pitfalls — not a grade. A full review still needs your judgement and the worksheet.</p>';
+  document.getElementById('buildFeedback').innerHTML = html;
+};
+</script>
+</body>
+</html>

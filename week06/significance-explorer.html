@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Significance Explorer</title>
+<style>
+  :root{
+    --navy:#1B2A4A; --blue:#2E5A88; --blueLt:#5E83B0; --blueTint:#E7EDF5;
+    --amber:#D7991F; --amberDk:#B07B12; --ink:#20262E; --muted:#6B7280;
+    --paper:#FBF7F0; --panel:#F4EEE2; --line:#DED3BF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Calibri,system-ui,sans-serif;background:linear-gradient(160deg,#FBF7F0,#F4EEE2);color:var(--ink);line-height:1.5;padding:24px;min-height:100vh}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{background:var(--navy);color:#fff;border-radius:18px;padding:26px 30px;box-shadow:0 8px 24px rgba(27,42,74,.28);position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(94,131,176,.3)}
+  .kick{font-size:12px;letter-spacing:3px;font-weight:700;color:var(--amber);text-transform:uppercase}
+  h1{font-family:Cambria,Georgia,serif;font-size:30px;margin:6px 0 4px}
+  header p{color:#C9D6E8;font-size:15px;font-style:italic}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:20px;box-shadow:0 4px 14px rgba(27,42,74,.06)}
+  h2{font-family:Cambria,Georgia,serif;color:var(--navy);font-size:21px;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  svg{width:100%;height:auto;background:var(--blueTint);border-radius:12px;display:block}
+  .slider-block{margin-bottom:16px}
+  .slider-block label{display:flex;justify-content:space-between;font-weight:600;font-size:14px;margin-bottom:6px}
+  .slider-block .val{color:var(--amberDk);font-weight:700}
+  input[type=range]{width:100%;accent-color:var(--blue);height:6px}
+  .readout{background:var(--panel);border-radius:12px;padding:16px;margin-top:6px}
+  .stat{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .stat:last-child{border-bottom:none}
+  .stat .k{font-size:13px;color:var(--muted)}
+  .stat .v{font-family:Cambria,serif;font-size:20px;font-weight:700;color:var(--navy)}
+  .verdict{font-family:Cambria,serif;font-weight:700;font-size:17px;margin-top:12px;padding:12px;border-radius:10px;text-align:center}
+  button{font-family:inherit;font-size:14px;font-weight:600;border:none;border-radius:10px;padding:10px 16px;cursor:pointer}
+  .btn-amber{background:var(--amber);color:#fff;box-shadow:0 3px 8px rgba(215,153,31,.3)}
+  .btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+  .presets{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .note{font-size:13px;color:var(--muted);margin-top:10px}
+  .legend{display:flex;gap:18px;font-size:13px;margin-top:8px;color:var(--ink)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+  .caseBox{background:var(--blueTint);border-left:5px solid var(--amber);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick">BIOL 601 · Research Methods</div>
+    <h1>Significance Explorer</h1>
+    <p>Move the sliders to see how effect size, variability, and sample size decide whether a difference is "real."</p>
+  </header>
+
+  <div class="card">
+    <h2>Two groups, one question: is the difference real?</h2>
+    <div class="sub">The curves show the distribution of measurements in a control group (blue) and a treated group (amber). The test asks whether their means differ by more than chance.</div>
+    <div class="grid">
+      <div>
+        <svg viewBox="0 0 520 280" id="plot" aria-label="two distributions"></svg>
+        <div class="legend">
+          <span><i class="dot" style="background:#5E83B0"></i>Control group</span>
+          <span><i class="dot" style="background:#D7991F"></i>Treated group</span>
+        </div>
+        <div class="caseBox" id="caseBox" style="display:none"></div>
+      </div>
+      <div>
+        <div class="slider-block">
+          <label>Difference in means <span class="val" id="diffV">1.0</span></label>
+          <input type="range" id="diff" min="0" max="40" value="10">
+        </div>
+        <div class="slider-block">
+          <label>Variability (SD) <span class="val" id="sdV">2.0</span></label>
+          <input type="range" id="sd" min="5" max="60" value="20">
+        </div>
+        <div class="slider-block">
+          <label>Sample size per group (n) <span class="val" id="nV">20</span></label>
+          <input type="range" id="n" min="3" max="120" value="20">
+        </div>
+        <div class="readout">
+          <div class="stat"><span class="k">Effect size (Cohen's d)</span><span class="v" id="dOut">—</span></div>
+          <div class="stat"><span class="k">Std error of difference</span><span class="v" id="seOut">—</span></div>
+          <div class="stat"><span class="k">Test statistic (z≈)</span><span class="v" id="zOut">—</span></div>
+          <div class="stat"><span class="k">p-value (two-tailed)</span><span class="v" id="pOut">—</span></div>
+        </div>
+        <div class="verdict" id="verdict">—</div>
+        <div class="presets">
+          <button class="btn-amber" id="seraliniBtn">🔬 Séralini preset</button>
+          <button class="btn-ghost" id="cleanBtn">Strong study preset</button>
+        </div>
+        <p class="note" id="note"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>BIOL 601 · Research Methods in Biosciences — Dr. Wael M. Osman, Khalifa University · Interactive teaching activity</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var W=520, H=280, pad=24, baseline=H-34;
+
+  // standard normal CDF via erf approximation
+  function erf(x){
+    var s = x<0?-1:1; x=Math.abs(x);
+    var t = 1/(1+0.3275911*x);
+    var y = 1 - (((((1.061405429*t -1.453152027)*t)+1.421413741)*t -0.284496736)*t +0.254829592)*t*Math.exp(-x*x);
+    return s*y;
+  }
+  function normCdf(z){ return 0.5*(1+erf(z/Math.SQRT2)); }
+
+  function gauss(x,mu,sd){ return Math.exp(-0.5*Math.pow((x-mu)/sd,2)); }
+
+  function curvePath(mu, sd, scale, color, peak){
+    var pts=[]; 
+    for(var px=pad; px<=W-pad; px+=4){
+      var xVal = (px-W/2); // data units centered
+      var y = gauss(xVal, mu, sd);
+      var yy = baseline - y*peak;
+      pts.push((px===pad?"M":"L")+px.toFixed(1)+","+yy.toFixed(1));
+    }
+    return pts.join(" ");
+  }
+
+  function update(){
+    var diff = +$("diff").value, sd = +$("sd").value/10, n = +$("n").value;
+    var diffData = diff/10; // scale display
+    $("diffV").textContent = diffData.toFixed(1);
+    $("sdV").textContent = sd.toFixed(1);
+    $("nV").textContent = n;
+
+    // pixel mapping: 1 data unit ~ 10 px
+    var muControl = -diff/2, muTreat = diff/2; // in px offset from centre
+    var sdPx = (+$("sd").value)/10*10; // px
+    if(sdPx<6) sdPx=6;
+    var peak = 150;
+    // draw
+    var svg = $("plot");
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    // baseline
+    var ax = document.createElementNS("http://www.w3.org/2000/svg","line");
+    ax.setAttribute("x1",pad); ax.setAttribute("y1",baseline); ax.setAttribute("x2",W-pad); ax.setAttribute("y2",baseline);
+    ax.setAttribute("stroke","#C9BBA0"); ax.setAttribute("stroke-width","1"); svg.appendChild(ax);
+    function addPath(mu,color,fill){
+      var p = document.createElementNS("http://www.w3.org/2000/svg","path");
+      p.setAttribute("d", curvePath(mu, sdPx, 1, color, peak)+" L"+(W-pad)+","+baseline+" L"+pad+","+baseline+" Z");
+      p.setAttribute("fill", fill); p.setAttribute("stroke", color); p.setAttribute("stroke-width","2");
+      svg.appendChild(p);
+    }
+    addPath(muControl, "#5E83B0", "rgba(94,131,176,0.35)");
+    addPath(muTreat, "#D7991F", "rgba(215,153,31,0.35)");
+    // mean markers
+    [[muControl,"#2E5A88"],[muTreat,"#B07B12"]].forEach(function(m){
+      var l=document.createElementNS("http://www.w3.org/2000/svg","line");
+      var px=W/2+m[0];
+      l.setAttribute("x1",px);l.setAttribute("y1",baseline);l.setAttribute("x2",px);l.setAttribute("y2",baseline-peak*0.65);
+      l.setAttribute("stroke",m[1]);l.setAttribute("stroke-dasharray","3 3");l.setAttribute("stroke-width","1.5");svg.appendChild(l);
+    });
+
+    // statistics (data units)
+    var meanDiff = diffData;
+    var sdData = sd;
+    var d = sdData>0 ? meanDiff/sdData : 0; // Cohen's d
+    var seDiff = sdData*Math.sqrt(2/n);
+    var z = seDiff>0 ? meanDiff/seDiff : 0;
+    var p = 2*(1-normCdf(Math.abs(z)));
+    if(p<0) p=0; if(p>1) p=1;
+    $("dOut").textContent = d.toFixed(2);
+    $("seOut").textContent = seDiff.toFixed(2);
+    $("zOut").textContent = z.toFixed(2);
+    $("pOut").textContent = p<0.001 ? "< 0.001" : p.toFixed(3);
+
+    var v=$("verdict");
+    if(p<0.05 && d>=0.5){ v.textContent="Likely a real, meaningful difference"; v.style.background="#e6efe2"; v.style.color="#2f6b2f";
+      $("note").textContent="A clear effect AND enough data: small p with a non-trivial effect size."; }
+    else if(p<0.05 && d<0.5){ v.textContent="Significant but small effect"; v.style.background="#FBF1DC"; v.style.color="#9A7012";
+      $("note").textContent="A large sample can make a tiny effect 'significant'. Statistical ≠ biological significance — report the effect size."; }
+    else if(p>=0.05 && d>=0.5){ v.textContent="Real-looking effect, but underpowered"; v.style.background="#FBF1DC"; v.style.color="#9A7012";
+      $("note").textContent="The effect may be real, but n is too small / noise too high to detect it — a Type II error risk."; }
+    else { v.textContent="No detectable difference"; v.style.background="#F4EEE2"; v.style.color="#6B7280";
+      $("note").textContent="Heavily overlapping curves: the difference is small relative to the noise."; }
+  }
+
+  $("seraliniBtn").addEventListener("click", function(){
+    $("diff").value=8; $("sd").value=55; $("n").value=10; update();
+    var cb=$("caseBox"); cb.style.display="block";
+    cb.innerHTML="<strong>Séralini lens.</strong> Small n (10), high variability (a tumour-prone strain), and a modest effect. The curves overlap heavily and the result is unstable — exactly why the study could not statistically support its dramatic claims.";
+  });
+  $("cleanBtn").addEventListener("click", function(){
+    $("diff").value=22; $("sd").value=18; $("n").value=80; update();
+    var cb=$("caseBox"); cb.style.display="block";
+    cb.innerHTML="<strong>Strong study.</strong> A clear effect, controlled variability, and adequate sample size — the curves separate and the conclusion is robust.";
+  });
+  ["diff","sd","n"].forEach(function(id){ $(id).addEventListener("input", function(){ $("caseBox").style.display="none"; update(); }); });
+
+  function init(){ update(); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>

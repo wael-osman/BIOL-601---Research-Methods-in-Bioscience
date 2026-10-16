@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Readiness Checker — BIOL 601</title>
+<style>
+  :root{
+    --ink:#15203F; --navy:#1E2A52; --navydk:#141C3A; --navydkr:#0E1430;
+    --blue:#3461A8; --bluel:#BFD0E8; --amber:#E0A23C; --amberdk:#B97E1E;
+    --paper:#FAF6EF; --tint:#F0EADD; --muted:#5E6577; --line:#D7CFBE;
+    --head:'Cambria','Georgia',serif; --body:'Calibri','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);color:var(--ink);background:linear-gradient(160deg,#FBF8F1,#F0EADD);line-height:1.5;padding:24px}
+  .wrap{max-width:860px;margin:0 auto}
+  header.hero{background:var(--navydkr);border-radius:18px;padding:30px 32px;color:#fff;position:relative;overflow:hidden}
+  header.hero .flow{position:absolute;right:26px;top:28px;display:flex;align-items:center;gap:6px}
+  header.hero .flow i{width:13px;height:13px;border-radius:50%;background:var(--blue);display:block}
+  header.hero .flow i.a{background:var(--amber)}
+  header.hero .flow span{width:18px;height:2px;background:var(--blue);display:block}
+  .kicker{color:var(--amber);font-weight:bold;letter-spacing:2.5px;font-size:12px}
+  h1{font-family:var(--head);font-size:30px;margin:6px 0 4px}
+  .sub{color:var(--bluel);font-size:15px}
+  .progress{display:flex;align-items:center;gap:12px;margin:18px 0 8px}
+  .bar{flex:1;height:10px;background:var(--tint);border-radius:6px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:linear-gradient(90deg,var(--navy),var(--amber));transition:width .4s}
+  .score{font-weight:bold;color:var(--navy);font-size:14px;white-space:nowrap}
+  section.card{background:#fff;border-radius:16px;padding:22px 24px;margin:16px 0;box-shadow:0 6px 22px rgba(20,28,58,.08)}
+  .stag{display:inline-block;background:var(--tint);color:var(--navy);font-weight:bold;font-size:12px;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+  h2{font-family:var(--head);color:var(--navy);font-size:20px;margin:10px 0 4px}
+  .instr{color:var(--muted);font-size:14px;margin-bottom:14px}
+  .q{font-weight:bold;font-size:16px;margin:18px 0 10px;color:var(--ink)}
+  .scenario{background:var(--tint);border-left:5px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:14px;margin:6px 0 10px;color:#3a3320}
+  .opts{display:grid;gap:9px}.opts.two{grid-template-columns:1fr 1fr}
+  .opt{border:2px solid var(--line);background:#fff;border-radius:11px;padding:12px 14px;cursor:pointer;font-size:14.5px;text-align:left;transition:.15s;font-family:var(--body)}
+  .opt:hover{border-color:var(--blue);background:#F4F7FC}
+  .opt.correct{border-color:var(--navy);background:#E6ECF6;color:var(--navy);font-weight:bold}
+  .opt.wrong{border-color:var(--amberdk);background:#F7ECD8;color:var(--amberdk)}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:14px;display:none}.fb.show{display:block}
+  .fb.ok{background:#E6ECF6;border-left:5px solid var(--navy)}
+  .fb.no{background:#F7ECD8;border-left:5px solid var(--amberdk)}
+  .fb b{color:var(--navy)}
+  .case{background:linear-gradient(160deg,var(--navy),var(--navydkr));color:#fff}
+  .case h2{color:#fff}.case .instr{color:var(--bluel)}
+  .case .sbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold;letter-spacing:1px}
+  .case .sbadge .circ{width:22px;height:22px;border-radius:50%;background:var(--amber);color:#fff;font-family:var(--head);display:inline-flex;align-items:center;justify-content:center;font-weight:bold}
+  .case .opt{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25);color:#fff}
+  .case .opt:hover{background:rgba(255,255,255,.14)}
+  .case .opt.correct{background:var(--blue);border-color:var(--amber)}
+  .case .opt.wrong{background:#6b4a1a;border-color:var(--amber)}
+  .case .scenario{background:rgba(255,255,255,.07);color:var(--bluel);border-left-color:var(--amber)}
+  .done{text-align:center;padding:26px;background:var(--navydkr);color:#fff;border-radius:16px;display:none}
+  .done.show{display:block}.done h2{color:#fff;font-size:26px}
+  .done .big{font-size:46px;font-family:var(--head);color:var(--amber);font-weight:bold}
+  .btn{background:var(--amber);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:bold;font-size:15px;cursor:pointer;font-family:var(--body);margin-top:12px}
+  .btn:hover{background:var(--amberdk)}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin:20px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="flow"><i class="a"></i><span></span><i></i><span></span><i></i></div>
+    <div class="kicker">BIOL 601 · INTERACTIVE ACTIVITY</div>
+    <h1>Data Readiness Checker</h1>
+    <div class="sub">Classify missing data, pick the right test, and catch the pitfalls before analysis.</div>
+  </header>
+
+  <div class="progress"><div class="bar"><div id="barfill"></div></div><div class="score" id="scoretxt">0 / 0</div></div>
+
+  <section class="card">
+    <span class="stag">PART 1 · MISSING DATA</span>
+    <h2>MCAR, MAR, or MNAR?</h2>
+    <p class="instr">Read each situation and classify the missingness mechanism.</p>
+    <div id="missq"></div>
+  </section>
+
+  <section class="card">
+    <span class="stag">PART 2 · CHOOSE THE TEST</span>
+    <h2>Are the data ready?</h2>
+    <p class="instr">Decide the right readiness check or test for each scenario.</p>
+    <div id="testq"></div>
+  </section>
+
+  <section class="card case">
+    <span class="sbadge"><span class="circ">S</span> SPOT THE PITFALL</span>
+    <h2 style="margin-top:10px">Catch the bad practice</h2>
+    <p class="instr">Identify the assessment pitfall — the kind that sank the Séralini study.</p>
+    <div id="pitq"></div>
+  </section>
+
+  <div class="done" id="done">
+    <div class="kicker" style="color:var(--amber)">ACTIVITY COMPLETE</div>
+    <div class="big" id="finalscore">0%</div>
+    <h2 id="donemsg">Nicely done!</h2>
+    <p style="color:var(--bluel);margin-top:6px" id="donesub"></p>
+    <button class="btn" onclick="location.reload()">Try again</button>
+  </div>
+  <footer>BIOL 601 · Research Methods in Biosciences — Dr. Wael M. Osman, Khalifa University</footer>
+</div>
+
+<script>
+const miss=[
+  {scn:"A centrifuge fault destroyed a random handful of tubes, unrelated to any sample property.", q:"Classify the missingness.", opts:["MCAR","MAR","MNAR"], ans:0, why:"Loss is unrelated to anything — Missing Completely At Random. Safe to drop or simple-impute."},
+  {scn:"Older participants skipped an online questionnaire more often; age is recorded for everyone.", q:"Classify the missingness.", opts:["MCAR","MAR","MNAR"], ans:1, why:"Missingness depends on an observed variable (age) — MAR. Multiple imputation can work."},
+  {scn:"The sickest patients dropped out before their final outcome was measured.", q:"Classify the missingness.", opts:["MCAR","MAR","MNAR"], ans:2, why:"Missingness depends on the unobserved outcome itself — MNAR, the most dangerous case."},
+];
+const test=[
+  {q:"Two groups, outcome roughly normal, variances similar, n≈40 each. Best test?", opts:["Independent t-test","Mann–Whitney U","Chi-square","No test possible"], ans:0, why:"Assumptions met → the parametric t-test, which is more powerful here."},
+  {q:"A small sample (n=8) with a strongly skewed outcome and an outlier. Best test?", opts:["Independent t-test","Mann–Whitney U","Pearson correlation","ANOVA"], ans:1, why:"Assumptions violated → a rank-based non-parametric test (Mann–Whitney U) is robust."},
+  {scn:"You have n=500 and a Shapiro–Wilk test returns p=0.01.", q:"What's the right read?", opts:["Data are badly non-normal; abandon parametric tests","At large n, trivial deviations test 'significant' — check the Q–Q plot and consider the CLT","Always transform whenever p<0.05","Delete the dataset"], ans:1, why:"Large n makes normality tests over-sensitive. Trust the plot; the CLT often justifies parametric tests."},
+  {q:"Levene's test is significant (variances differ) for a two-group comparison. A good option is…", opts:["Ignore it and use a standard t-test","Use Welch's correction or a non-parametric test","Add more decimal places","Re-run until p>0.05"], ans:1, why:"Unequal variance → Welch's correction, a transformation, or a non-parametric test."},
+];
+const pit=[
+  {scn:"After seeing the data, a team reports a hypothesis as if it had been predicted in advance.", q:"This pitfall is…", opts:["HARKing","Power analysis","Pre-registration","Imputation"], ans:0, why:"Hypothesizing After Results are Known dresses up exploration as prediction — it inflates false positives."},
+  {scn:"Subjects whose values weakened the result are dropped, with no pre-set exclusion rule.", q:"This pitfall is…", opts:["Valid cleaning","Selective exclusion (bias)","A power analysis","Normalization"], ans:1, why:"Post-hoc exclusion without a fixed rule manufactures significance — a serious bias."},
+  {scn:"A small study finds no effect, and the authors conclude the treatment 'definitely does nothing.'", q:"The flaw is…", opts:["Ignoring statistical power","Over-powering","Pre-registration","Too much documentation"], ans:0, why:"An underpowered null can't prove absence of effect (Type II error) — it ignores power."},
+  {q:"The single change that would have most helped Séralini's credibility:", opts:["Prettier figures","A pre-registered plan with a primary outcome and adequate n","More press coverage","A larger journal"], ans:1, why:"Pre-registration plus adequate power would have removed the core post-hoc and underpowering criticisms."},
+];
+
+let total=miss.length+test.length+pit.length, correct=0, answered=0;
+function updateScore(){document.getElementById('scoretxt').textContent=correct+" / "+total;document.getElementById('barfill').style.width=(answered/total*100)+"%";if(answered===total)finish();}
+function mkMC(items,boxId,two){
+  const box=document.getElementById(boxId);
+  items.forEach(it=>{
+    const d=document.createElement('div');d.style.margin="14px 0";
+    if(it.scn){const sc=document.createElement('div');sc.className="scenario";sc.textContent=it.scn;d.appendChild(sc);}
+    const qh=document.createElement('div');qh.className="q";qh.textContent=it.q;d.appendChild(qh);
+    const row=document.createElement('div');row.className="opts"+(two?" two":"");
+    it.opts.forEach((o,idx)=>{const btn=document.createElement('button');btn.className="opt";btn.textContent=o;btn.onclick=()=>judge(btn,row,d,idx===it.ans,it.why,row.children[it.ans]);row.appendChild(btn);});
+    d.appendChild(row);const fb=document.createElement('div');fb.className="fb";d.appendChild(fb);box.appendChild(d);
+  });
+}
+function judge(btn,row,d,isCorrect,why,correctBtn){
+  if(d.dataset.done)return;d.dataset.done="1";answered++;
+  [...row.children].forEach(b=>b.disabled=true);
+  const fb=d.querySelector('.fb');fb.classList.add('show');
+  if(isCorrect){btn.classList.add('correct');correct++;fb.classList.add('ok');fb.innerHTML='<b>Correct.</b> '+why;}
+  else{btn.classList.add('wrong');fb.classList.add('no');fb.innerHTML='<b>Not quite.</b> '+why;if(correctBtn)correctBtn.classList.add('correct');}
+  updateScore();
+}
+function finish(){
+  const pct=Math.round(correct/total*100);const dn=document.getElementById('done');dn.classList.add('show');
+  document.getElementById('finalscore').textContent=pct+"%";
+  let msg="Keep reviewing — re-read the missing-data taxonomy and assumption checks.";
+  if(pct>=85)msg="Excellent — your datasets will be analysis-ready.";
+  else if(pct>=60)msg="Solid work — revisit the items you missed.";
+  document.getElementById('donemsg').textContent=msg;
+  document.getElementById('donesub').textContent="You scored "+correct+" of "+total+". Plan the analysis before you see the result.";
+  dn.scrollIntoView({behavior:'smooth'});
+}
+mkMC(miss,'missq');mkMC(test,'testq');mkMC(pit,'pitq');
+document.getElementById('scoretxt').textContent="0 / "+total;
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Hypothesis Lab</title>
+<style>
+  :root{
+    --navy:#20304B; --slate:#3E5C76; --amber:#C9852B; --teal:#3F8E8C;
+    --light:#F4F6F8; --ink:#1E2A3A; --mute:#6B7785; --line:#DDE4EA;
+    --good:#2E8B6F; --bad:#C24A37;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Calibri,'Segoe UI',Arial,sans-serif;color:var(--ink);background:var(--light)}
+  header{background:var(--navy);color:#fff;padding:26px 28px}
+  header .kick{color:#B9C6D6;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+  header h1{margin:6px 0 2px;font-family:Cambria,Georgia,serif;font-size:28px}
+  header p{margin:0;color:#C3D0DE;font-size:14px}
+  .tabs{display:flex;gap:6px;padding:14px 28px 0;background:var(--navy);flex-wrap:wrap}
+  .tab{background:#2A3D5A;color:#C3D0DE;border:none;padding:11px 20px;border-radius:10px 10px 0 0;font-size:15px;font-weight:600;cursor:pointer}
+  .tab.active{background:var(--light);color:var(--navy)}
+  main{max-width:880px;margin:0 auto;padding:28px}
+  .panel{display:none}.panel.active{display:block}
+  .lead{color:var(--mute);font-size:15px;margin:0 0 18px}
+  .btn{background:var(--slate);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:15px;font-weight:600;cursor:pointer}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:#fff;color:var(--slate);border:1.5px solid var(--slate)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .counter{color:var(--mute);font-size:14px}
+
+  .fc{background:#fff;border:1px solid var(--line);border-radius:16px;min-height:200px;display:flex;align-items:center;justify-content:center;text-align:center;padding:34px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.06);user-select:none}
+  .fc .term{font-family:Cambria,Georgia,serif;font-size:26px;font-weight:700;color:var(--slate)}
+  .fc .ans{font-size:18px;color:var(--ink);line-height:1.4}
+  .fcwrap{position:relative}.hint{position:absolute;bottom:12px;right:16px;font-size:12px;color:var(--mute)}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card .ask{font-size:14px;color:var(--mute)}
+  .stmt{font-family:Cambria,Georgia,serif;font-size:22px;line-height:1.4;color:var(--ink);margin:8px 0 4px}
+  .stmt b{color:var(--amber);font-style:normal}
+  .choices{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .choice{flex:1;min-width:150px;padding:13px;border:1.5px solid var(--line);border-radius:11px;background:#fff;font-size:15px;font-weight:600;cursor:pointer;text-align:center;color:var(--ink)}
+  .choice:hover{border-color:var(--slate)}
+  .choice.correct{border-color:var(--good);background:#EAF6F1;color:var(--good)}
+  .choice.wrong{border-color:var(--bad);background:#FBEDEA;color:var(--bad)}
+  .fb{margin-top:14px;font-size:15px;min-height:22px}.fb b.g{color:var(--good)}.fb b.r{color:var(--bad)}.why{color:var(--mute)}
+  .next-row{margin-top:18px;display:flex;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="kick">BIOL 601 · Research Methods · Week 1</div>
+  <h1>Hypothesis Lab</h1>
+  <p>Flashcards · is it a hypothesis? · name the variable. Nothing is saved or sent — it runs in your browser.</p>
+</header>
+<div class="tabs">
+  <button class="tab active" data-tab="cards">Flashcards</button>
+  <button class="tab" data-tab="hyp">Hypothesis or not?</button>
+  <button class="tab" data-tab="var">Name the variable</button>
+</div>
+<main>
+  <section class="panel active" id="cards">
+    <p class="lead">Click the card to flip it.</p>
+    <div class="fcwrap"><div class="fc" id="fc"><span class="content"></span><span class="hint">click to flip</span></div></div>
+    <div class="row" style="margin-top:16px;justify-content:space-between">
+      <div class="row"><button class="btn ghost" id="prev">‹ Prev</button><button class="btn ghost" id="next">Next ›</button><button class="btn" id="shuffle">Shuffle</button></div>
+      <span class="counter" id="fcount"></span>
+    </div>
+  </section>
+
+  <section class="panel" id="hyp">
+    <p class="lead">Decide whether each statement is a testable, falsifiable hypothesis.</p>
+    <div id="hypBody"></div>
+  </section>
+
+  <section class="panel" id="var">
+    <p class="lead">In each hypothesis, classify the highlighted phrase.</p>
+    <div id="varBody"></div>
+  </section>
+</main>
+
+<script>
+var FLASH=[
+ ["Scientific method","Observe \u2192 question \u2192 hypothesise \u2192 experiment \u2192 analyse \u2192 conclude; an iterative cycle."],
+ ["Hypothesis","A tentative, testable, falsifiable prediction that guides a study."],
+ ["Independent variable","What you change \u2014 the presumed cause."],
+ ["Dependent variable","What you measure \u2014 the effect."],
+ ["Controlled variable","A factor held constant so it can't confound the result."],
+ ["Theory","A broad, well-tested framework explaining many findings (not a guess)."],
+ ["Scientific law","A concise description of a consistently observed pattern."],
+ ["Falsifiable","It is possible to imagine evidence that would prove the claim wrong."],
+ ["Replication","Repeating a study to confirm the result."],
+ ["Peer review","Independent expert scrutiny before publication."],
+ ["p-value","Probability of the result if the null hypothesis were true \u2014 not the chance the hypothesis is true."],
+ ["Confirmation bias","Noticing only the evidence that fits what you expected."]
+];
+var HYP=[
+ ["If plants receive more light, then they will grow taller.",true,"Specific, testable, and falsifiable \u2014 a hypothesis."],
+ ["Plants are fascinating organisms.",false,"An opinion \u2014 there is nothing to test."],
+ ["Does light affect plant growth?",false,"A research question, not a hypothesis (it predicts no answer)."],
+ ["An invisible life-force makes plants grow only when unobserved.",false,"Unfalsifiable \u2014 no evidence could ever disprove it."],
+ ["If mice eat more sugar, then their body weight will increase.",true,"A specific, testable prediction."],
+ ["Sugar is bad for you.",false,"A vague value judgement, not testable as stated."],
+ ["If a bacterial culture is treated with antibiotic X, then its growth rate will decrease.",true,"Testable and falsifiable."],
+ ["Everything happens for a reason.",false,"Unfalsifiable \u2014 it can never be shown wrong."]
+];
+var VAR=[
+ ["If <b>caffeine dose</b> increases, then reaction time improves.","iv","Caffeine dose is what is changed \u2014 the independent variable."],
+ ["If caffeine dose increases, then <b>reaction time</b> improves.","dv","Reaction time is what is measured \u2014 the dependent variable."],
+ ["Higher temperature speeds the reaction; <b>pH was held constant</b> throughout.","cv","pH was kept constant \u2014 a controlled variable."],
+ ["If the <b>fat content of the diet</b> is raised, then gut-microbiota diversity falls.","iv","Diet fat content is the manipulated cause \u2014 independent variable."],
+ ["If the fat content of the diet is raised, then <b>gut-microbiota diversity</b> falls.","dv","Microbiota diversity is the measured effect \u2014 dependent variable."],
+ ["Light intensity was varied; <b>pot size and water</b> were the same for all plants.","cv","Pot size and water were held constant \u2014 controlled variables."]
+];
+var VARLABEL={iv:"the independent variable",dv:"the dependent variable",cv:"a controlled variable"};
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+    t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');
+  };
+});
+
+/* flashcards */
+var deck=FLASH.slice(),fi=0,flip=false;
+var fc=document.getElementById('fc'),fcC=fc.querySelector('.content');
+function rc(){flip=false;fcC.className='content term';fcC.textContent=deck[fi][0];document.getElementById('fcount').textContent=(fi+1)+' / '+deck.length;}
+fc.onclick=function(){flip=!flip;if(flip){fcC.className='content ans';fcC.textContent=deck[fi][1];}else{fcC.className='content term';fcC.textContent=deck[fi][0];}};
+document.getElementById('next').onclick=function(){fi=(fi+1)%deck.length;rc();};
+document.getElementById('prev').onclick=function(){fi=(fi-1+deck.length)%deck.length;rc();};
+document.getElementById('shuffle').onclick=function(){for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=deck[i];deck[i]=deck[j];deck[j]=t;}fi=0;rc();};
+rc();
+
+/* generic classify engine */
+function runClassify(opts){
+  var idx=0,score=0,lock=false;
+  var body=document.getElementById(opts.bodyId);
+  function render(){
+    if(idx>=opts.items.length){
+      body.innerHTML='<div class="card"><div class="stmt" style="color:'+opts.doneColor+'">Done! You scored '+score+' / '+opts.items.length+'.</div></div>'+
+        '<div class="next-row"><button class="btn ghost" id="'+opts.bodyId+'R">Restart</button></div>';
+      document.getElementById(opts.bodyId+'R').onclick=function(){idx=0;score=0;render();};
+      return;
+    }
+    lock=false;
+    var it=opts.items[idx];
+    var choicesHtml=opts.choices.map(function(c){return '<button class="choice" data-v="'+c[0]+'">'+c[1]+'</button>';}).join('');
+    body.innerHTML='<div class="card"><div class="ask">'+opts.ask+'</div><div class="stmt">'+opts.stmt(it)+'</div>'+
+      '<div class="choices">'+choicesHtml+'</div><div class="fb" id="'+opts.bodyId+'fb"></div></div>'+
+      '<div class="next-row"><button class="btn" id="'+opts.bodyId+'next" style="display:none">Next \u203A</button>'+
+      '<span class="counter">'+opts.label+' '+(idx+1)+' of '+opts.items.length+'  ·  score '+score+'</span></div>';
+    body.querySelectorAll('.choice').forEach(function(btn){
+      btn.onclick=function(){
+        if(lock)return;lock=true;
+        var picked=btn.dataset.v,correct=opts.correct(it);
+        body.querySelectorAll('.choice').forEach(function(b){if(b.dataset.v===correct)b.classList.add('correct');});
+        var fb=document.getElementById(opts.bodyId+'fb');
+        if(picked===correct){score++;fb.innerHTML='<b class="g">Correct.</b> <span class="why">'+opts.why(it)+'</span>';}
+        else{btn.classList.add('wrong');fb.innerHTML='<b class="r">'+opts.wrongLead(it,correct)+'</b> <span class="why">'+opts.why(it)+'</span>';}
+        var nx=document.getElementById(opts.bodyId+'next');nx.style.display='inline-block';nx.onclick=function(){idx++;render();};
+      };
+    });
+  }
+  render();
+}
+
+runClassify({
+  bodyId:'hypBody', items:HYP, ask:'Statement:', label:'Statement', doneColor:'#3E5C76',
+  stmt:function(it){return '\u201C'+it[0]+'\u201D';},
+  choices:[["yes","Testable hypothesis"],["no","Not a hypothesis"]],
+  correct:function(it){return it[1]?"yes":"no";},
+  why:function(it){return it[2];},
+  wrongLead:function(it,c){return c==="yes"?"Actually, this is a testable hypothesis.":"Actually, this is not a testable hypothesis.";}
+});
+
+runClassify({
+  bodyId:'varBody', items:VAR, ask:'Classify the highlighted phrase:', label:'Item', doneColor:'#3E5C76',
+  stmt:function(it){return it[0];},
+  choices:[["iv","Independent"],["dv","Dependent"],["cv","Controlled"]],
+  correct:function(it){return it[1];},
+  why:function(it){return it[2];},
+  wrongLead:function(it,c){return "Not quite — it's "+VARLABEL[c]+".";}
+});
+</script>
+</body>
+</html>

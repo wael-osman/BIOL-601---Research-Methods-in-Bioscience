@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOL 601 · Spot the Science</title>
+<style>
+  :root{
+    --navy:#20304B; --slate:#3E5C76; --amber:#C9852B; --teal:#3F8E8C;
+    --light:#F4F6F8; --ink:#1E2A3A; --mute:#6B7785; --line:#DDE4EA;
+    --good:#2E8B6F; --bad:#C24A37;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Calibri,'Segoe UI',Arial,sans-serif;color:var(--ink);background:var(--light)}
+  header{background:var(--navy);color:#fff;padding:26px 28px}
+  header .kick{color:#B9C6D6;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+  header h1{margin:6px 0 2px;font-family:Cambria,Georgia,serif;font-size:28px}
+  header p{margin:0;color:#C3D0DE;font-size:14px}
+  .tabs{display:flex;gap:6px;padding:14px 28px 0;background:var(--navy);flex-wrap:wrap}
+  .tab{background:#2A3D5A;color:#C3D0DE;border:none;padding:11px 20px;border-radius:10px 10px 0 0;
+       font-size:15px;font-weight:600;cursor:pointer}
+  .tab.active{background:var(--light);color:var(--navy)}
+  main{max-width:880px;margin:0 auto;padding:28px}
+  .panel{display:none}.panel.active{display:block}
+  .lead{color:var(--mute);font-size:15px;margin:0 0 18px}
+  .btn{background:var(--slate);color:#fff;border:none;border-radius:9px;padding:11px 20px;font-size:15px;
+       font-weight:600;cursor:pointer}.btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:#fff;color:var(--slate);border:1.5px solid var(--slate)}
+  .progress{color:var(--mute);font-size:14px;margin-top:6px}
+
+  .claim{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;min-height:140px;
+         display:flex;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .claim .q{font-family:Cambria,Georgia,serif;font-size:22px;line-height:1.35;color:var(--ink)}
+  .choices{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 4px}
+  .choice{flex:1;min-width:150px;padding:13px;border:1.5px solid var(--line);border-radius:11px;background:#fff;
+          font-size:15px;font-weight:600;cursor:pointer;text-align:center;color:var(--ink)}
+  .choice:hover{border-color:var(--slate)}
+  .choice.correct{border-color:var(--good);background:#EAF6F1;color:var(--good)}
+  .choice.wrong{border-color:var(--bad);background:#FBEDEA;color:var(--bad)}
+  .fb{margin-top:14px;font-size:15px;min-height:22px;line-height:1.4}
+  .fb b.g{color:var(--good)} .fb b.r{color:var(--bad)}
+  .why{color:var(--mute)}
+  .next-row{margin-top:18px;display:flex;gap:10px;align-items:center}
+
+  /* catch the AI */
+  .pair{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 4px}
+  .stmt{flex:1;min-width:240px;background:#fff;border:1.8px solid var(--line);border-radius:14px;padding:18px;
+        cursor:pointer;font-size:16px;line-height:1.4;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .stmt:hover{border-color:var(--slate)}
+  .stmt .tag{display:block;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--mute);margin-bottom:8px}
+  .stmt.correct{border-color:var(--good);background:#EAF6F1}
+  .stmt.wrong{border-color:var(--bad);background:#FBEDEA}
+
+  .scorebar{background:var(--navy);color:#fff;border-radius:12px;padding:16px 20px;font-size:18px;
+            font-weight:700;margin-bottom:18px;display:none}
+  .scorebar.show{display:block}
+  .done{font-size:20px;font-weight:700;color:var(--slate)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kick">BIOL 601 · Research Methods in Biosciences · Week 1</div>
+  <h1>Spot the Science</h1>
+  <p>Classify real-sounding claims, then catch the AI. Nothing is saved or sent — this runs entirely in your browser.</p>
+</header>
+<div class="tabs">
+  <button class="tab active" data-tab="sort">Science or not?</button>
+  <button class="tab" data-tab="ai">Catch the AI</button>
+</div>
+<main>
+  <!-- MODE A -->
+  <section class="panel active" id="sort">
+    <p class="lead">For each claim, decide: is it scientific, pseudoscience, or not a scientific question at all?</p>
+    <div class="scorebar" id="scoreA"></div>
+    <div id="sortBody">
+      <div class="claim"><span class="q" id="claimText"></span></div>
+      <div class="choices">
+        <button class="choice" data-cat="science">Scientific</button>
+        <button class="choice" data-cat="pseudo">Pseudoscience</button>
+        <button class="choice" data-cat="notsci">Not a science question</button>
+      </div>
+      <div class="fb" id="fbA"></div>
+      <div class="next-row">
+        <button class="btn" id="nextA" style="display:none">Next ›</button>
+        <span class="progress" id="progA"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODE B -->
+  <section class="panel" id="ai">
+    <p class="lead">Both statements sound authoritative. Click the one you should trust — then see the tell.</p>
+    <div class="scorebar" id="scoreB"></div>
+    <div id="aiBody">
+      <div class="pair" id="pair"></div>
+      <div class="fb" id="fbB"></div>
+      <div class="next-row">
+        <button class="btn" id="nextB" style="display:none">Next ›</button>
+        <span class="progress" id="progB"></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- data ---------- */
+var CLAIMS = [
+  ["A randomised controlled trial showed drug X lowered LDL cholesterol 18% versus placebo (p<0.01).","science","Evidence-based, reproducible, and falsifiable — the marks of a scientific claim."],
+  ["Crystals realign your body's energy field to cure illness.","pseudo","No proposed mechanism and nothing could ever disprove it — unfalsifiable."],
+  ["Vaccines do more harm than good; any study that disagrees is industry-funded.","pseudo","An unfalsifiable conspiracy that dismisses all counter-evidence by definition."],
+  ["Whether euthanasia is morally permissible.","notsci","A values / ethics question — important, but not settled by experiment."],
+  ["Knocking out the TP53 gene increases tumour formation in mice.","science","A specific, testable, falsifiable prediction."],
+  ["This herbal supplement boosts immunity and detoxifies your body.","pseudo","Vague, scientific-sounding jargon with no falsifiable claim."],
+  ["The universe is about 13.8 billion years old, based on cosmic-microwave-background data.","science","Evidence-based and open to revision as data improve."],
+  ["Mercury being in retrograde disrupts communication and electronics.","pseudo","No evidence and no mechanism; unfalsifiable."],
+  ["Is abstract art more beautiful than realist art?","notsci","An aesthetic judgement, not a scientific question."],
+  ["Homeopathic dilutions retain a 'memory' of a substance even when no molecules remain.","pseudo","Contradicts known chemistry and is framed so nothing could disprove it."]
+];
+var CATLABEL={science:"Scientific",pseudo:"Pseudoscience",notsci:"Not a science question"};
+
+var PAIRS = [
+  ["Telomeres shorten with each cell division, contributing to replicative senescence.",
+   "Telomeres lengthen with each division, which is why older cells divide faster.",0,
+   "The second is fluent but biologically backwards — a classic plausible-sounding fabrication."],
+  ["Smith et al. (2014, Science): CRISPR-Cas9 creates double-strand breaks repaired by NHEJ or HDR.",
+   "Patel et al. (2020, Journal of Quantum Genomics): CRISPR edits DNA by quantum tunnelling without breaking strands.",0,
+   "The second invents a non-existent journal and a fake mechanism — always verify the source and the science."],
+  ["A p-value of 0.03 means the result is unlikely if the null hypothesis were true.",
+   "A p-value of 0.03 means there is a 97% chance the hypothesis is true.",0,
+   "The second is the most common statistical misstatement — and AI reproduces it confidently."],
+  ["mRNA vaccines deliver instructions for cells to make a viral protein, training the immune system.",
+   "mRNA vaccines permanently rewrite your DNA to produce immunity.",0,
+   "The second is false — mRNA does not enter the nucleus or alter your DNA."]
+];
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  };
+});
+
+/* ---------- Mode A: classify ---------- */
+var ai_=0, aScore=0, aLocked=false;
+var claimText=document.getElementById('claimText');
+var choices=document.querySelectorAll('#sort .choice');
+function showClaim(){
+  if(ai_>=CLAIMS.length){
+    document.getElementById('sortBody').innerHTML='<div class="done">Done! You scored '+aScore+' / '+CLAIMS.length+'. '+
+      (aScore===CLAIMS.length?'You have a sharp eye.':aScore>=7?'Strong — review the misses.':'Revisit the three tests: evidence, falsifiability, source.')+
+      '</div><div class="next-row"><button class="btn ghost" onclick="restartA()">Restart</button></div>';
+    return;
+  }
+  aLocked=false;
+  claimText.textContent='\u201C'+CLAIMS[ai_][0]+'\u201D';
+  choices.forEach(function(c){c.classList.remove('correct','wrong');});
+  document.getElementById('fbA').innerHTML='';
+  document.getElementById('nextA').style.display='none';
+  document.getElementById('progA').textContent='Claim '+(ai_+1)+' of '+CLAIMS.length+'  ·  score '+aScore;
+}
+choices.forEach(function(c){
+  c.onclick=function(){
+    if(aLocked) return; aLocked=true;
+    var picked=c.dataset.cat, correct=CLAIMS[ai_][1];
+    var fb=document.getElementById('fbA');
+    choices.forEach(function(x){if(x.dataset.cat===correct)x.classList.add('correct');});
+    if(picked===correct){
+      aScore++;
+      fb.innerHTML='<b class="g">Correct.</b> <span class="why">'+CLAIMS[ai_][2]+'</span>';
+    }else{
+      c.classList.add('wrong');
+      fb.innerHTML='<b class="r">Not quite — it\u2019s '+CATLABEL[correct]+'.</b> <span class="why">'+CLAIMS[ai_][2]+'</span>';
+    }
+    document.getElementById('nextA').style.display='inline-block';
+    document.getElementById('progA').textContent='Claim '+(ai_+1)+' of '+CLAIMS.length+'  ·  score '+aScore;
+  };
+});
+document.getElementById('nextA').onclick=function(){ai_++;showClaim();};
+function restartA(){
+  document.getElementById('sortBody').innerHTML=
+   '<div class="claim"><span class="q" id="claimText"></span></div>'+
+   '<div class="choices">'+
+   '<button class="choice" data-cat="science">Scientific</button>'+
+   '<button class="choice" data-cat="pseudo">Pseudoscience</button>'+
+   '<button class="choice" data-cat="notsci">Not a science question</button></div>'+
+   '<div class="fb" id="fbA"></div>'+
+   '<div class="next-row"><button class="btn" id="nextA" style="display:none">Next \u203A</button>'+
+   '<span class="progress" id="progA"></span></div>';
+  ai_=0;aScore=0;
+  claimText=document.getElementById('claimText');
+  choices=document.querySelectorAll('#sort .choice');
+  bindChoices(); document.getElementById('nextA').onclick=function(){ai_++;showClaim();};
+  showClaim();
+}
+function bindChoices(){
+  choices.forEach(function(c){
+    c.onclick=function(){
+      if(aLocked) return; aLocked=true;
+      var picked=c.dataset.cat, correct=CLAIMS[ai_][1];
+      var fb=document.getElementById('fbA');
+      choices.forEach(function(x){if(x.dataset.cat===correct)x.classList.add('correct');});
+      if(picked===correct){aScore++;fb.innerHTML='<b class="g">Correct.</b> <span class="why">'+CLAIMS[ai_][2]+'</span>';}
+      else{c.classList.add('wrong');fb.innerHTML='<b class="r">Not quite — it\u2019s '+CATLABEL[correct]+'.</b> <span class="why">'+CLAIMS[ai_][2]+'</span>';}
+      document.getElementById('nextA').style.display='inline-block';
+      document.getElementById('progA').textContent='Claim '+(ai_+1)+' of '+CLAIMS.length+'  ·  score '+aScore;
+    };
+  });
+}
+showClaim();
+
+/* ---------- Mode B: catch the AI ---------- */
+var bi=0, bScore=0, bLocked=false;
+function showPair(){
+  var body=document.getElementById('aiBody');
+  if(bi>=PAIRS.length){
+    body.innerHTML='<div class="done">Done! You scored '+bScore+' / '+PAIRS.length+'. '+
+      (bScore===PAIRS.length?'You audit like a scientist.':'Remember: verify the source, check the mechanism.')+
+      '</div><div class="next-row"><button class="btn ghost" onclick="restartB()">Restart</button></div>';
+    return;
+  }
+  bLocked=false;
+  var p=PAIRS[bi];
+  var html='<div class="pair">'+
+    '<div class="stmt" data-i="0"><span class="tag">STATEMENT A</span>'+p[0]+'</div>'+
+    '<div class="stmt" data-i="1"><span class="tag">STATEMENT B</span>'+p[1]+'</div></div>'+
+    '<div class="fb" id="fbB"></div>'+
+    '<div class="next-row"><button class="btn" id="nextB" style="display:none">Next \u203A</button>'+
+    '<span class="progress" id="progB"></span></div>';
+  body.innerHTML=html;
+  document.getElementById('progB').textContent='Pair '+(bi+1)+' of '+PAIRS.length+'  ·  score '+bScore;
+  document.querySelectorAll('#ai .stmt').forEach(function(st){
+    st.onclick=function(){
+      if(bLocked) return; bLocked=true;
+      var idx=parseInt(st.dataset.i,10), correct=PAIRS[bi][2];
+      var stmts=document.querySelectorAll('#ai .stmt');
+      stmts[correct].classList.add('correct');
+      var fb=document.getElementById('fbB');
+      if(idx===correct){bScore++;fb.innerHTML='<b class="g">Correct.</b> <span class="why">'+PAIRS[bi][3]+'</span>';}
+      else{st.classList.add('wrong');fb.innerHTML='<b class="r">That one is the fabrication.</b> <span class="why">'+PAIRS[bi][3]+'</span>';}
+      document.getElementById('nextB').style.display='inline-block';
+      document.getElementById('nextB').onclick=function(){bi++;showPair();};
+      document.getElementById('progB').textContent='Pair '+(bi+1)+' of '+PAIRS.length+'  ·  score '+bScore;
+    };
+  });
+}
+function restartB(){bi=0;bScore=0;showPair();}
+showPair();
+</script>
+</body>
+</html>

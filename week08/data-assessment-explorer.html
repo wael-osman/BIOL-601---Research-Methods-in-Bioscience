@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Assessment Explorer — BIOL 601 (Week 8)</title>
+<style>
+  :root{
+    --navy:#1E2A4A; --blue:#2E5A9C; --blueMid:#3F6FB5; --amber:#DB9430; --amberDk:#B5731B;
+    --sky:#CBD9EE; --skyLt:#E7EEF7; --paper:#FAF6EE; --ink:#1B2540; --inkSoft:#4A536C;
+    --cloud:#F3ECDD; --line:#E0D6C2; --green:#1F7A3D; --red:#B5431B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Calibri","Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.5;padding:24px 16px;}
+  .wrap{max-width:960px;margin:0 auto;}
+  header.top{background:var(--navy);color:#fff;border-radius:18px;padding:26px 30px;position:relative;overflow:hidden;}
+  header.top::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;background:var(--blue);border-radius:50%;opacity:.55;}
+  header.top .kick{color:var(--sky);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+  header.top h1{font-family:"Cambria",Georgia,serif;font-size:29px;margin:6px 0 6px;position:relative;z-index:1;}
+  header.top p{color:var(--skyLt);font-size:15px;position:relative;z-index:1;max-width:660px;}
+  nav.tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;}
+  nav.tabs button{font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--inkSoft);padding:10px 16px;border-radius:11px;transition:.15s;}
+  nav.tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 10px rgba(30,42,74,.05);}
+  h2.sec{font-family:"Cambria",Georgia,serif;color:var(--navy);font-size:21px;margin-bottom:4px;}
+  p.lede{font-size:14px;color:var(--inkSoft);margin-bottom:14px;}
+  .btn{font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;border:none;background:var(--amber);color:var(--navy);padding:10px 20px;border-radius:11px;transition:.15s;}
+  .btn:hover{background:var(--amberDk);color:#fff;}
+  .btn.blue{background:var(--blue);color:#fff;}
+  .btn.blue:hover{background:var(--navy);}
+  table.data{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .scrollwrap{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px;}
+  table.data th{position:sticky;top:0;background:var(--navy);color:#fff;font-weight:700;padding:7px 8px;text-align:left;white-space:nowrap;}
+  table.data td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  table.data tr:nth-child(even) td{background:var(--cloud);}
+  td.bad{background:#fbe1c8 !important;color:var(--red);font-weight:800;text-align:center;}
+  .scan{margin-top:16px;display:none;}
+  .scan.show{display:block;animation:fade .25s ease;}
+  .finding{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:11px;background:var(--cloud);border-left:4px solid var(--amber);margin-bottom:10px;}
+  .finding .ic{font-size:18px;line-height:1.2;}
+  .finding b{color:var(--amberDk);}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;}
+  .stat{background:var(--skyLt);border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center;}
+  .stat .v{font-family:"Cambria",Georgia,serif;font-size:24px;font-weight:700;color:var(--blue);}
+  .stat .l{font-size:11px;color:var(--inkSoft);font-weight:700;margin-top:2px;}
+  /* audit */
+  .audit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .col h3{font-family:"Cambria",Georgia,serif;font-size:16px;margin-bottom:8px;}
+  .var{font-size:13px;padding:6px 10px;border-radius:8px;margin-bottom:5px;border:1px solid var(--line);background:#fff;display:flex;justify-content:space-between;gap:8px;}
+  .var.phantom{background:#fbe1c8;border-color:#e7b58a;color:var(--red);}
+  .var.omitted{background:var(--skyLt);border-color:var(--sky);color:var(--blue);}
+  .var.ok{color:var(--inkSoft);}
+  .tag{font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px;align-self:center;}
+  .tag.p{background:var(--red);color:#fff;}
+  .tag.o{background:var(--blue);color:#fff;}
+  /* selector */
+  .sel-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;}
+  .fieldset{display:flex;flex-direction:column;gap:4px;}
+  .fieldset label{font-size:12px;font-weight:700;color:var(--inkSoft);}
+  select{font-family:inherit;font-size:14px;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);min-width:230px;}
+  .reco{margin-top:8px;padding:18px;border-radius:13px;background:var(--navy);color:#fff;display:none;}
+  .reco.show{display:block;animation:fade .25s ease;}
+  .reco .test{font-family:"Cambria",Georgia,serif;font-size:22px;color:var(--amber);font-weight:700;margin-bottom:4px;}
+  .reco .detail{font-size:14px;color:var(--skyLt);line-height:1.5;}
+  .reco .nums{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap;}
+  .reco .num{background:rgba(255,255,255,.08);border-radius:9px;padding:9px 14px;}
+  .reco .num .b{font-size:18px;font-weight:700;color:#fff;}
+  .reco .num .s{font-size:11px;color:var(--sky);}
+  .warnflag{margin-top:12px;padding:10px 14px;border-radius:9px;background:rgba(219,148,48,.18);border-left:3px solid var(--amber);font-size:13px;color:#fff;}
+  /* key vs reality */
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  table.cmp th{background:var(--navy);color:#fff;padding:9px 11px;text-align:left;}
+  table.cmp td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.cmp tr:nth-child(even) td{background:var(--cloud);}
+  .x{color:var(--red);font-weight:800;}
+  .ck{color:var(--green);font-weight:800;}
+  .note{font-size:12.5px;color:var(--inkSoft);font-style:italic;margin-top:18px;text-align:center;}
+  @media(max-width:680px){.statgrid{grid-template-columns:repeat(2,1fr)}.audit-grid{grid-template-columns:1fr}header.top h1{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kick">BIOL 601 · Research Methods · Week 8</div>
+    <h1>Data Assessment Explorer</h1>
+    <p>Interrogate the mock vaccination dataset the way a careful analyst would: scan it for hidden problems, audit its documentation, pick the right test, and check the inherited answer key against reality — all computed live from the real data.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-p="scan">Dataset &amp; quality scan</button>
+    <button class="tab-btn" data-p="audit">Metadata audit</button>
+    <button class="tab-btn" data-p="selector">Test selector</button>
+    <button class="tab-btn" data-p="reality">Key vs reality</button>
+  </nav>
+
+  <!-- SCAN -->
+  <section id="scan" class="panel active">
+    <div class="card">
+      <h2 class="sec">The dataset (n = 60)</h2>
+      <p class="lede">Scroll the data. Then run the quality scan — every figure below is computed from these rows in your browser.</p>
+      <div class="scrollwrap"><table class="data" id="dataTable"></table></div>
+      <div style="margin-top:14px;"><button class="btn" id="scanBtn">Run quality scan</button></div>
+      <div class="scan" id="scanOut"></div>
+    </div>
+    <p class="note">The highlighted D28_IL6 cells hold a Stata missing marker (“.”) — the kind of contamination that silently turns a numeric column into text.</p>
+  </section>
+
+  <!-- AUDIT -->
+  <section id="audit" class="panel">
+    <div class="card">
+      <h2 class="sec">Metadata audit — documentation vs data</h2>
+      <p class="lede">A data dictionary is a claim, not ground truth. Reveal how the supplied metadata compares with the variables actually present.</p>
+      <div style="margin-bottom:14px;"><button class="btn blue" id="auditBtn">Reveal discrepancies</button></div>
+      <div class="audit-grid">
+        <div class="col"><h3 style="color:var(--blue)">Documented in metadata</h3><div id="metaList"></div></div>
+        <div class="col"><h3 style="color:var(--amberDk)">Actually in the dataset</h3><div id="dataList"></div></div>
+      </div>
+      <div class="finding" id="auditSummary" style="display:none;margin-top:16px;"></div>
+    </div>
+    <p class="note">Plus the study narrative cites ACE2, TMPRSS2 and TLR7 — none of which exist here.</p>
+  </section>
+
+  <!-- SELECTOR -->
+  <section id="selector" class="panel">
+    <div class="card">
+      <h2 class="sec">Test selector</h2>
+      <p class="lede">Pick a comparison; the tool applies the decision logic, computes the live result, and flags any assumption problems.</p>
+      <div class="sel-row">
+        <div class="fieldset">
+          <label for="qType">What do you want to do?</label>
+          <select id="qType">
+            <option value="grp">Compare a continuous variable: vaccinated vs not</option>
+            <option value="age">Compare a continuous variable across age groups</option>
+            <option value="assoc">Test association between two categorical variables</option>
+            <option value="paired">Compare a paired measurement (D0 vs D28)</option>
+          </select>
+        </div>
+        <div class="fieldset" id="varWrap">
+          <label for="qVar">Variable / pair</label>
+          <select id="qVar"></select>
+        </div>
+        <button class="btn" id="recoBtn">Recommend &amp; compute</button>
+      </div>
+      <div class="reco" id="recoOut"></div>
+    </div>
+    <p class="note">Normality decisions come from Shapiro–Wilk tests on the real data; group means and counts are computed live here.</p>
+  </section>
+
+  <!-- REALITY -->
+  <section id="reality" class="panel">
+    <div class="card">
+      <h2 class="sec">Inherited key vs reality</h2>
+      <p class="lede">The originally circulated answer key reported these figures. The “Actual” column is computed live from the dataset.</p>
+      <table class="cmp" id="cmpTable"></table>
+    </div>
+    <p class="note">Not one of the key’s headline numbers reproduces from the data — the core lesson of full data assessment.</p>
+  </section>
+</div>
+
+<script>
+ROWS=[{"id":"P001","age":58,"sex":"Male","vr":"Medium","gIL6":7.24,"cIL6":13.1,"tnf":9.45,"dose":"Yes","d0":102.0,"d28igg":110.0,"d28il6":1.1,"d28il6raw":1.1,"prot":"No Protection"},{"id":"P002","age":48,"sex":"Female","vr":"Low","gIL6":7.76,"cIL6":11.96,"tnf":8.22,"dose":"Yes","d0":98.0,"d28igg":104.0,"d28il6":1.5,"d28il6raw":1.5,"prot":"No Protection"},{"id":"P003","age":19,"sex":"Female","vr":"Medium","gIL6":5.83,"cIL6":13.16,"tnf":6.61,"dose":"Yes","d0":105.0,"d28igg":112.0,"d28il6":1.3,"d28il6raw":1.3,"prot":"No Protection"},{"id":"P004","age":22,"sex":"Female","vr":"High","gIL6":6.25,"cIL6":13.65,"tnf":7.77,"dose":"Yes","d0":96.0,"d28igg":101.0,"d28il6":1.8,"d28il6raw":1.8,"prot":"No Protection"},{"id":"P005","age":55,"sex":"Female","vr":"Medium","gIL6":4.39,"cIL6":12.14,"tnf":9.56,"dose":"No","d0":110.0,"d28igg":118.0,"d28il6":2.1,"d28il6raw":2.1,"prot":"No Protection"},{"id":"P006","age":35,"sex":"Male","vr":"Medium","gIL6":6.32,"cIL6":9.87,"tnf":8.38,"dose":"Yes","d0":103.0,"d28igg":111.0,"d28il6":1.4,"d28il6raw":1.4,"prot":"No Protection"},{"id":"P007","age":63,"sex":"Male","vr":"Low","gIL6":5.71,"cIL6":10.17,"tnf":6.92,"dose":"No","d0":107.0,"d28igg":114.0,"d28il6":1.2,"d28il6raw":1.2,"prot":"No Protection"},{"id":"P008","age":41,"sex":"Female","vr":"High","gIL6":7.13,"cIL6":11.33,"tnf":9.94,"dose":"Yes","d0":95.0,"d28igg":100.0,"d28il6":1.6,"d28il6raw":1.6,"prot":"No Protection"},{"id":"P009","age":34,"sex":"Female","vr":"Medium","gIL6":5.88,"cIL6":10.78,"tnf":9.28,"dose":"Yes","d0":101.0,"d28igg":109.0,"d28il6":1.7,"d28il6raw":1.7,"prot":"No Protection"},{"id":"P010","age":57,"sex":"Female","vr":"Low","gIL6":6.91,"cIL6":9.69,"tnf":6.98,"dose":"Yes","d0":108.0,"d28igg":116.0,"d28il6":1.9,"d28il6raw":1.9,"prot":"No Protection"},{"id":"P011","age":25,"sex":"Male","vr":"Medium","gIL6":6.67,"cIL6":11.01,"tnf":7.23,"dose":"No","d0":106.0,"d28igg":113.0,"d28il6":1.5,"d28il6raw":1.5,"prot":"No Protection"},{"id":"P012","age":44,"sex":"Female","vr":"High","gIL6":6.03,"cIL6":13.71,"tnf":8.15,"dose":"Yes","d0":99.0,"d28igg":105.0,"d28il6":1.4,"d28il6raw":1.4,"prot":"No Protection"},{"id":"P013","age":28,"sex":"Male","vr":"Medium","gIL6":6.11,"cIL6":11.45,"tnf":8.63,"dose":"Yes","d0":112.0,"d28igg":120.0,"d28il6":2.0,"d28il6raw":2.0,"prot":"No Protection"},{"id":"P014","age":66,"sex":"Male","vr":"Low","gIL6":8.15,"cIL6":14.67,"tnf":7.43,"dose":"Yes","d0":97.0,"d28igg":102.0,"d28il6":1.1,"d28il6raw":1.1,"prot":"No Protection"},{"id":"P015","age":21,"sex":"Female","vr":"Medium","gIL6":6.94,"cIL6":11.87,"tnf":9.41,"dose":"No","d0":104.0,"d28igg":111.0,"d28il6":1.6,"d28il6raw":1.6,"prot":"No Protection"},{"id":"P016","age":45,"sex":"Male","vr":"Medium","gIL6":6.42,"cIL6":13.1,"tnf":8.1,"dose":"Yes","d0":100.0,"d28igg":107.0,"d28il6":1.8,"d28il6raw":1.8,"prot":"No Protection"},{"id":"P017","age":38,"sex":"Female","vr":"High","gIL6":7.89,"cIL6":14.9,"tnf":9.2,"dose":"Yes","d0":111.0,"d28igg":119.0,"d28il6":1.3,"d28il6raw":1.3,"prot":"No Protection"},{"id":"P018","age":31,"sex":"Male","vr":"Low","gIL6":5.23,"cIL6":10.8,"tnf":7.6,"dose":"No","d0":94.0,"d28igg":99.0,"d28il6":1.5,"d28il6raw":1.5,"prot":"No Protection"},{"id":"P019","age":29,"sex":"Female","vr":"Medium","gIL6":6.02,"cIL6":12.55,"tnf":8.33,"dose":"Yes","d0":109.0,"d28igg":117.0,"d28il6":1.7,"d28il6raw":1.7,"prot":"No Protection"},{"id":"P020","age":53,"sex":"Male","vr":"High","gIL6":7.12,"cIL6":14.02,"tnf":9.1,"dose":"Yes","d0":93.0,"d28igg":98.0,"d28il6":1.2,"d28il6raw":1.2,"prot":"No Protection"},{"id":"P021","age":36,"sex":"Female","vr":"Medium","gIL6":6.58,"cIL6":13.22,"tnf":8.67,"dose":"Yes","d0":100.0,"d28igg":135.0,"d28il6":2.5,"d28il6raw":2.5,"prot":"No Protection"},{"id":"P022","age":41,"sex":"Male","vr":"High","gIL6":7.3,"cIL6":15.01,"tnf":9.55,"dose":"Yes","d0":98.0,"d28igg":128.0,"d28il6":3.1,"d28il6raw":3.1,"prot":"No Protection"},{"id":"P023","age":26,"sex":"Female","vr":"Low","gIL6":4.88,"cIL6":10.33,"tnf":7.21,"dose":"No","d0":103.0,"d28igg":140.0,"d28il6":2.8,"d28il6raw":2.8,"prot":"Protection"},{"id":"P024","age":60,"sex":"Male","vr":"Medium","gIL6":6.7,"cIL6":13.1,"tnf":8.43,"dose":"Yes","d0":95.0,"d28igg":130.0,"d28il6":3.5,"d28il6raw":3.5,"prot":"No Protection"},{"id":"P025","age":33,"sex":"Female","vr":"Low","gIL6":5.1,"cIL6":11.05,"tnf":7.9,"dose":"No","d0":107.0,"d28igg":145.0,"d28il6":4.2,"d28il6raw":4.2,"prot":"Protection"},{"id":"P026","age":46,"sex":"Male","vr":"High","gIL6":7.65,"cIL6":14.45,"tnf":9.0,"dose":"Yes","d0":99.0,"d28igg":133.0,"d28il6":2.9,"d28il6raw":2.9,"prot":"No Protection"},{"id":"P027","age":39,"sex":"Female","vr":"Medium","gIL6":6.44,"cIL6":12.98,"tnf":8.15,"dose":"Yes","d0":101.0,"d28igg":138.0,"d28il6":3.8,"d28il6raw":3.8,"prot":"Protection"},{"id":"P028","age":31,"sex":"Male","vr":"Low","gIL6":5.25,"cIL6":11.13,"tnf":7.63,"dose":"No","d0":94.0,"d28igg":125.0,"d28il6":2.6,"d28il6raw":2.6,"prot":"No Protection"},{"id":"P029","age":35,"sex":"Female","vr":"Medium","gIL6":6.3,"cIL6":12.85,"tnf":8.05,"dose":"Yes","d0":104.0,"d28igg":142.0,"d28il6":4.0,"d28il6raw":4.0,"prot":"Protection"},{"id":"P030","age":52,"sex":"Male","vr":"High","gIL6":7.4,"cIL6":15.0,"tnf":9.32,"dose":"Yes","d0":97.0,"d28igg":127.0,"d28il6":3.3,"d28il6raw":3.3,"prot":"No Protection"},{"id":"P031","age":29,"sex":"Female","vr":"Low","gIL6":5.0,"cIL6":10.45,"tnf":7.5,"dose":"No","d0":106.0,"d28igg":147.0,"d28il6":2.7,"d28il6raw":2.7,"prot":"Protection"},{"id":"P032","age":48,"sex":"Male","vr":"Medium","gIL6":6.1,"cIL6":12.3,"tnf":8.0,"dose":"Yes","d0":96.0,"d28igg":132.0,"d28il6":3.0,"d28il6raw":3.0,"prot":"No Protection"},{"id":"P033","age":34,"sex":"Female","vr":"High","gIL6":7.2,"cIL6":14.8,"tnf":9.1,"dose":"Yes","d0":102.0,"d28igg":137.0,"d28il6":3.4,"d28il6raw":3.4,"prot":"No Protection"},{"id":"P034","age":50,"sex":"Male","vr":"Medium","gIL6":6.65,"cIL6":13.25,"tnf":8.6,"dose":"Yes","d0":93.0,"d28igg":123.0,"d28il6":2.4,"d28il6raw":2.4,"prot":"No Protection"},{"id":"P035","age":28,"sex":"Female","vr":"Low","gIL6":5.15,"cIL6":11.3,"tnf":7.7,"dose":"No","d0":108.0,"d28igg":149.0,"d28il6":4.1,"d28il6raw":4.1,"prot":"Protection"},{"id":"P036","age":44,"sex":"Male","vr":"Medium","gIL6":6.55,"cIL6":12.95,"tnf":8.25,"dose":"Yes","d0":92.0,"d28igg":122.0,"d28il6":3.6,"d28il6raw":3.6,"prot":"No Protection"},{"id":"P037","age":37,"sex":"Female","vr":"High","gIL6":7.5,"cIL6":15.1,"tnf":9.25,"dose":"Yes","d0":105.0,"d28igg":144.0,"d28il6":2.9,"d28il6raw":2.9,"prot":"Protection"},{"id":"P038","age":32,"sex":"Male","vr":"Low","gIL6":5.3,"cIL6":11.2,"tnf":7.8,"dose":"No","d0":91.0,"d28igg":121.0,"d28il6":3.2,"d28il6raw":3.2,"prot":"No Protection"},{"id":"P039","age":30,"sex":"Female","vr":"Medium","gIL6":6.2,"cIL6":12.5,"tnf":8.1,"dose":"Yes","d0":109.0,"d28igg":150.0,"d28il6":4.5,"d28il6raw":4.5,"prot":"Protection"},{"id":"P040","age":54,"sex":"Male","vr":"High","gIL6":7.8,"cIL6":15.2,"tnf":9.4,"dose":"Yes","d0":90.0,"d28igg":120.0,"d28il6":2.3,"d28il6raw":2.3,"prot":"No Protection"},{"id":"P041","age":40,"sex":"Female","vr":"Medium","gIL6":6.25,"cIL6":13.0,"tnf":8.2,"dose":"Yes","d0":101.0,"d28igg":175.0,"d28il6":5.5,"d28il6raw":5.5,"prot":"Protection"},{"id":"P042","age":27,"sex":"Male","vr":"Low","gIL6":4.9,"cIL6":10.4,"tnf":7.35,"dose":"No","d0":95.0,"d28igg":165.0,"d28il6":6.8,"d28il6raw":6.8,"prot":"Protection"},{"id":"P043","age":47,"sex":"Female","vr":"Medium","gIL6":6.6,"cIL6":13.2,"tnf":8.4,"dose":"Yes","d0":105.0,"d28igg":180.0,"d28il6":7.2,"d28il6raw":7.2,"prot":"Protection"},{"id":"P044","age":36,"sex":"Male","vr":"High","gIL6":7.1,"cIL6":14.5,"tnf":9.0,"dose":"Yes","d0":90.0,"d28igg":155.0,"d28il6":8.1,"d28il6raw":8.1,"prot":"Protection"},{"id":"P045","age":33,"sex":"Female","vr":"Low","gIL6":5.05,"cIL6":10.9,"tnf":7.55,"dose":"No","d0":110.0,"d28igg":190.0,"d28il6":5.9,"d28il6raw":5.9,"prot":"Protection"},{"id":"P046","age":49,"sex":"Male","vr":"Medium","gIL6":6.75,"cIL6":13.4,"tnf":8.5,"dose":"Yes","d0":99.0,"d28igg":170.0,"d28il6":6.3,"d28il6raw":6.3,"prot":"Protection"},{"id":"P047","age":43,"sex":"Female","vr":"High","gIL6":7.55,"cIL6":14.95,"tnf":9.15,"dose":"Yes","d0":103.0,"d28igg":185.0,"d28il6":7.5,"d28il6raw":7.5,"prot":"Protection"},{"id":"P048","age":25,"sex":"Male","vr":"Low","gIL6":5.2,"cIL6":10.85,"tnf":7.4,"dose":"No","d0":97.0,"d28igg":168.0,"d28il6":null,"d28il6raw":".","prot":"Protection"},{"id":"P049","age":38,"sex":"Female","vr":"Medium","gIL6":6.5,"cIL6":13.05,"tnf":8.3,"dose":"Yes","d0":112.0,"d28igg":195.0,"d28il6":8.8,"d28il6raw":8.8,"prot":"Protection"},{"id":"P050","age":46,"sex":"Male","vr":"High","gIL6":7.45,"cIL6":14.85,"tnf":9.2,"dose":"Yes","d0":93.0,"d28igg":160.0,"d28il6":6.1,"d28il6raw":6.1,"prot":"Protection"},{"id":"P051","age":35,"sex":"Female","vr":"Medium","gIL6":6.4,"cIL6":12.95,"tnf":8.45,"dose":"Yes","d0":108.0,"d28igg":188.0,"d28il6":7.0,"d28il6raw":7.0,"prot":"Protection"},{"id":"P052","age":29,"sex":"Male","vr":"Low","gIL6":5.1,"cIL6":11.0,"tnf":7.6,"dose":"No","d0":91.0,"d28igg":158.0,"d28il6":null,"d28il6raw":".","prot":"Protection"},{"id":"P053","age":42,"sex":"Female","vr":"Medium","gIL6":6.55,"cIL6":13.1,"tnf":8.35,"dose":"Yes","d0":115.0,"d28igg":200.0,"d28il6":8.5,"d28il6raw":8.5,"prot":"Protection"},{"id":"P054","age":51,"sex":"Male","vr":"High","gIL6":7.6,"cIL6":15.1,"tnf":9.3,"dose":"Yes","d0":96.0,"d28igg":167.0,"d28il6":6.5,"d28il6raw":6.5,"prot":"Protection"},{"id":"P055","age":26,"sex":"Female","vr":"Low","gIL6":4.95,"cIL6":10.55,"tnf":7.25,"dose":"No","d0":109.0,"d28igg":192.0,"d28il6":7.8,"d28il6raw":7.8,"prot":"Protection"},{"id":"P056","age":40,"sex":"Male","vr":"Medium","gIL6":6.3,"cIL6":12.8,"tnf":8.1,"dose":"Yes","d0":94.0,"d28igg":163.0,"d28il6":null,"d28il6raw":".","prot":"Protection"},{"id":"P057","age":37,"sex":"Female","vr":"High","gIL6":7.35,"cIL6":14.6,"tnf":9.0,"dose":"Yes","d0":111.0,"d28igg":194.0,"d28il6":8.3,"d28il6raw":8.3,"prot":"Protection"},{"id":"P058","age":31,"sex":"Male","vr":"Low","gIL6":5.15,"cIL6":10.9,"tnf":7.45,"dose":"No","d0":92.0,"d28igg":159.0,"d28il6":6.2,"d28il6raw":6.2,"prot":"Protection"},{"id":"P059","age":45,"sex":"Female","vr":"Medium","gIL6":6.48,"cIL6":13.0,"tnf":8.25,"dose":"Yes","d0":107.0,"d28igg":183.0,"d28il6":7.4,"d28il6raw":7.4,"prot":"Protection"},{"id":"P060","age":38,"sex":"Female","vr":"Medium","gIL6":6.14,"cIL6":12.89,"tnf":8.21,"dose":"Yes","d0":98.0,"d28igg":172.0,"d28il6":6.9,"d28il6raw":6.9,"prot":"Protection"}];
+
+// ---- precomputed inferential results (Shapiro / t / chi-square / ANOVA via scipy) ----
+var NORM = { cIL6:false, tnf:true, gIL6:true, d28igg:false, d0:true, d28il6:false };
+var INFER = {
+  grp:{
+    cIL6:{test:"Mann–Whitney U", reason:"serum IL-6 is non-normal (Shapiro p = 0.008)", p:"< 0.0001", sig:true, note:""},
+    tnf:{test:"Independent t-test", reason:"TNF-α is normal (Shapiro p = 0.244) — so a t-test, NOT Mann–Whitney", p:"= 0.0002", sig:true, note:"The worksheet’s default ‘use Mann–Whitney for TNF-α’ is wrong here — check normality first."},
+    d28igg:{test:"Independent t-test", reason:"D28 IgG compared between dose groups", p:"= 0.72", sig:false, note:"No dose effect on the day-28 titre (the real signal is the paired D0→D28 change)."}
+  },
+  age:{
+    cIL6:{test:"ANOVA (confirm with Kruskal–Wallis)", reason:"three age groups; IL-6 is borderline non-normal", p:"= 0.007", sig:true, note:"Serum IL-6 rises with age."},
+    d28il6:{test:"Kruskal–Wallis", reason:"D28 IL-6 is strongly skewed → non-parametric", p:"= 0.028", sig:true, note:"ANOVA p=0.043 but skew makes Kruskal–Wallis the defensible test."}
+  },
+  paired:{
+    igg:{test:"Paired t-test (confirm with Wilcoxon)", reason:"each participant measured twice (D0 and D28)", p:"< 1×10⁻¹⁴", sig:true, note:"This is the study’s headline result — and the original materials never run it."}
+  }
+};
+
+// ---- helpers ----
+function mean(a){ return a.reduce(function(s,x){return s+x;},0)/a.length; }
+function fmt(x){ return (Math.round(x*100)/100); }
+
+// ---- dataset table ----
+(function(){
+  var cols=[["id","ID"],["age","Age"],["sex","Sex"],["vr","Vaccine_Response"],["gIL6","GeneExpr_IL6"],["cIL6","Cytokine_IL6"],["tnf","TNFα"],["dose","Full_Dose"],["d0","D0_IgG"],["d28igg","D28_IgG"],["d28il6raw","D28_IL6"],["prot","PROTECTION"]];
+  var t=document.getElementById('dataTable');
+  var thead="<tr>"; for(var c=0;c<cols.length;c++){ thead+="<th>"+cols[c][1]+"</th>"; } thead+="</tr>";
+  var body="";
+  for(var i=0;i<ROWS.length;i++){
+    body+="<tr>";
+    for(var c2=0;c2<cols.length;c2++){
+      var k=cols[c2][0], v=ROWS[i][k];
+      if(k==="d28il6raw" && v===".") body+='<td class="bad">.</td>';
+      else body+="<td>"+v+"</td>";
+    }
+    body+="</tr>";
+  }
+  t.innerHTML=thead+body;
+})();
+
+// ---- quality scan ----
+document.getElementById('scanBtn').addEventListener('click', function(){
+  var contaminated=ROWS.filter(function(r){return r.d28il6===null;});
+  var nClean=ROWS.filter(function(r){return r.d28il6!==null;}).length;
+  var out=document.getElementById('scanOut');
+  var stats=
+    '<div class="statgrid">'+
+    '<div class="stat"><div class="v">'+ROWS.length+'</div><div class="l">rows total</div></div>'+
+    '<div class="stat"><div class="v">'+nClean+'</div><div class="l">D28_IL6 usable</div></div>'+
+    '<div class="stat"><div class="v">'+contaminated.length+'</div><div class="l">“.” markers</div></div>'+
+    '<div class="stat"><div class="v">2</div><div class="l">IL-6 variables</div></div>'+
+    '</div>';
+  var f1='<div class="finding"><div class="ic">⚠️</div><div><b>Hidden missing data.</b> D28_IL6 contains '+contaminated.length+' Stata “.” markers ('+contaminated.map(function(r){return r.id;}).join(", ")+'). The column imports as <b>text</b>, silently breaking numeric summaries; usable n falls 60 → '+nClean+'.</div></div>';
+  var f2='<div class="finding"><div class="ic">🔍</div><div><b>Two different IL-6 variables.</b> Gene_Expression_IL6 (fold change) and Cytokine_IL6 (serum, pg/mL) are distinct measurements with different distributions — every IL-6 statement must say which one.</div></div>';
+  var f3='<div class="finding"><div class="ic">📋</div><div><b>Documentation mismatch.</b> The metadata and study narrative reference variables that are not present (see the Metadata audit tab).</div></div>';
+  out.innerHTML=stats+'<div style="height:14px"></div>'+f1+f2+f3;
+  out.className="scan show";
+});
+
+// ---- metadata audit ----
+var META_DOC=["Patient_ID","Age","Sex","Vaccine Response","Cytokine_IL6","Cytokine_TNF","GeneExpr_IFNG","GeneExpr_IL10","Adverse_Reaction","Infection_Status","Ct_Value_PCR","D0_IgG","D28_IgG","D28_IL6","PROTECTION"];
+var DATA_VARS=["Patient_ID","Age","Sex","Vaccine_Response","Gene_Expression_IL6","Gene_Expression_IFNg","Cytokine_IL6","Cytokine_TNFalpha","qPCR_Ct_Values","Housekeeping_Gene_Ct","Received_Full_Dose","D0_IgG","D28_IgG","D28_IL6","PROTECTION"];
+var PHANTOM=["Cytokine_TNF","GeneExpr_IFNG","GeneExpr_IL10","Adverse_Reaction","Infection_Status","Ct_Value_PCR","Vaccine Response"];
+var OMITTED=["Gene_Expression_IL6","Gene_Expression_IFNg","Cytokine_TNFalpha","qPCR_Ct_Values","Housekeeping_Gene_Ct","Received_Full_Dose"];
+(function(){
+  var ml=document.getElementById('metaList'), dl=document.getElementById('dataList');
+  for(var i=0;i<META_DOC.length;i++){ var d=document.createElement('div'); d.className='var ok'; d.setAttribute('data-v',META_DOC[i]); d.innerHTML='<span>'+META_DOC[i]+'</span>'; ml.appendChild(d); }
+  for(var j=0;j<DATA_VARS.length;j++){ var e=document.createElement('div'); e.className='var ok'; e.setAttribute('data-v',DATA_VARS[j]); e.innerHTML='<span>'+DATA_VARS[j]+'</span>'; dl.appendChild(e); }
+})();
+document.getElementById('auditBtn').addEventListener('click', function(){
+  var ml=document.getElementById('metaList').querySelectorAll('.var');
+  for(var i=0;i<ml.length;i++){ var v=ml[i].getAttribute('data-v');
+    if(PHANTOM.indexOf(v)>=0){ ml[i].className='var phantom'; ml[i].innerHTML='<span>'+v+'</span><span class="tag p">NOT IN DATA</span>'; }
+  }
+  var dl=document.getElementById('dataList').querySelectorAll('.var');
+  for(var j=0;j<dl.length;j++){ var w=dl[j].getAttribute('data-v');
+    if(OMITTED.indexOf(w)>=0){ dl[j].className='var omitted'; dl[j].innerHTML='<span>'+w+'</span><span class="tag o">UNDOCUMENTED</span>'; }
+  }
+  var s=document.getElementById('auditSummary'); s.style.display='flex';
+  s.innerHTML='<div class="ic">⚠️</div><div><b>'+PHANTOM.length+' documented variables do not exist</b> in the data, and <b>'+OMITTED.length+' real variables are undocumented</b>. Names are inconsistent too (Cytokine_TNF vs Cytokine_TNFalpha; “Vaccine Response” vs Vaccine_Response). Reconcile the dictionary before analysing.</div>';
+});
+
+// ---- test selector ----
+var VAR_OPTS={
+  grp:[["cIL6","Serum IL-6 (Cytokine_IL6)"],["tnf","TNF-α (Cytokine_TNFalpha)"],["d28igg","D28 IgG titre"]],
+  age:[["cIL6","Serum IL-6 (Cytokine_IL6)"],["d28il6","D28 IL-6"]],
+  assoc:[["pp","PROTECTION × Full dose"],["vr","Vaccine_Response × Full dose"]],
+  paired:[["igg","D0 IgG → D28 IgG"]]
+};
+function fillVars(){
+  var qt=document.getElementById('qType').value;
+  var vs=VAR_OPTS[qt]; var sel=document.getElementById('qVar'); sel.innerHTML="";
+  for(var i=0;i<vs.length;i++){ var o=document.createElement('option'); o.value=vs[i][0]; o.textContent=vs[i][1]; sel.appendChild(o); }
+}
+document.getElementById('qType').addEventListener('change', fillVars);
+fillVars();
+
+document.getElementById('recoBtn').addEventListener('click', function(){
+  var qt=document.getElementById('qType').value, qv=document.getElementById('qVar').value;
+  var out=document.getElementById('recoOut'); var html="";
+  if(qt==="grp"){
+    var yes=ROWS.filter(function(r){return r.dose==="Yes";}).map(function(r){return r[qv];});
+    var no=ROWS.filter(function(r){return r.dose==="No";}).map(function(r){return r[qv];});
+    var info=INFER.grp[qv];
+    html='<div class="test">'+info.test+'</div><div class="detail">Chosen because '+info.reason+'.</div>'+
+      '<div class="nums"><div class="num"><div class="b">'+fmt(mean(yes))+'</div><div class="s">Vaccinated mean (n='+yes.length+')</div></div>'+
+      '<div class="num"><div class="b">'+fmt(mean(no))+'</div><div class="s">Non-vaccinated mean (n='+no.length+')</div></div>'+
+      '<div class="num"><div class="b">p '+info.p+'</div><div class="s">'+(info.sig?'Significant':'Not significant')+'</div></div></div>';
+    if(info.note) html+='<div class="warnflag">'+info.note+'</div>';
+  } else if(qt==="age"){
+    var info2=INFER.age[qv];
+    var g1=ROWS.filter(function(r){return r.age<=30 && r[qv]!==null;}).map(function(r){return r[qv];});
+    var g2=ROWS.filter(function(r){return r.age>30 && r.age<=50 && r[qv]!==null;}).map(function(r){return r[qv];});
+    var g3=ROWS.filter(function(r){return r.age>50 && r[qv]!==null;}).map(function(r){return r[qv];});
+    html='<div class="test">'+info2.test+'</div><div class="detail">Chosen because '+info2.reason+'.</div>'+
+      '<div class="nums"><div class="num"><div class="b">'+fmt(mean(g1))+'</div><div class="s">18–30 (n='+g1.length+')</div></div>'+
+      '<div class="num"><div class="b">'+fmt(mean(g2))+'</div><div class="s">31–50 (n='+g2.length+')</div></div>'+
+      '<div class="num"><div class="b">'+fmt(mean(g3))+'</div><div class="s">51+ (n='+g3.length+')</div></div>'+
+      '<div class="num"><div class="b">p '+info2.p+'</div><div class="s">'+(info2.sig?'Significant':'NS')+'</div></div></div>';
+    if(info2.note) html+='<div class="warnflag">'+info2.note+'</div>';
+  } else if(qt==="paired"){
+    var d0=ROWS.map(function(r){return r.d0;}), d28=ROWS.map(function(r){return r.d28igg;});
+    var info3=INFER.paired.igg;
+    html='<div class="test">'+info3.test+'</div><div class="detail">Chosen because '+info3.reason+'.</div>'+
+      '<div class="nums"><div class="num"><div class="b">'+fmt(mean(d0))+'</div><div class="s">D0 mean (pre)</div></div>'+
+      '<div class="num"><div class="b">'+fmt(mean(d28))+'</div><div class="s">D28 mean (post)</div></div>'+
+      '<div class="num"><div class="b">+'+Math.round((mean(d28)-mean(d0))/mean(d0)*100)+'%</div><div class="s">rise</div></div>'+
+      '<div class="num"><div class="b">p '+info3.p+'</div><div class="s">Significant</div></div></div>';
+    if(info3.note) html+='<div class="warnflag">'+info3.note+'</div>';
+  } else { // assoc
+    if(qv==="pp"){
+      html='<div class="test">Chi-square</div><div class="detail">All expected counts ≥ 5, so chi-square is valid.</div>'+
+        '<div class="nums"><div class="num"><div class="b">χ² ≈ 0.81</div><div class="s">PROTECTION × dose</div></div>'+
+        '<div class="num"><div class="b">p = 0.37</div><div class="s">Not significant</div></div></div>'+
+        '<div class="warnflag">No association — the inherited key’s “significant” claim is unsupported.</div>';
+    } else {
+      html='<div class="test">Fisher’s exact (NOT chi-square)</div><div class="detail">A zero cell (High × No = 0) and two expected counts &lt; 5 violate chi-square’s assumptions.</div>'+
+        '<div class="nums"><div class="num"><div class="b">χ² = 34.7</div><div class="s">looks huge…</div></div>'+
+        '<div class="num"><div class="b">High × No = 0</div><div class="s">empty cell</div></div></div>'+
+        '<div class="warnflag">A big χ² with sparse cells is a red flag, not a result. Use Fisher’s exact.</div>';
+    }
+  }
+  out.innerHTML=html; out.className="reco show";
+});
+
+// ---- key vs reality ----
+(function(){
+  var nYesF=ROWS.filter(function(r){return r.dose==="Yes";}).length;
+  var nNoF=ROWS.length-nYesF;
+  var nF=ROWS.filter(function(r){return r.sex==="Female";}).length;
+  var nM=ROWS.length-nF;
+  var a1=ROWS.filter(function(r){return r.age<=30;}).length;
+  var a2=ROWS.filter(function(r){return r.age>30&&r.age<=50;}).length;
+  var a3=ROWS.filter(function(r){return r.age>50;}).length;
+  var maxAge=Math.max.apply(null,ROWS.map(function(r){return r.age;}));
+  var rows=[
+    ["Vaccinated / not","~40 / 20",nYesF+" / "+nNoF],
+    ["Sex (M / F)","30 / 30",nM+" / "+nF],
+    ["Age groups 18–30 / 31–50 / 51+","15 / 25 / 20",a1+" / "+a2+" / "+a3],
+    ["Maximum age","implies 77",""+maxAge],
+    ["Missing data location","TNF-α (after)","D28_IL6 (P048/P052/P056)"],
+    ["IL-6 (before) descriptives","mean 2.1, SD 0.9","two IL-6 vars; serum IL-6 is skewed"],
+    ["TNF-α distribution","skewed → Mann–Whitney","normal → t-test"],
+    ["Protection × dose association","significant","χ²≈0.81, p=0.37 — not significant"]
+  ];
+  var t=document.getElementById('cmpTable');
+  var h="<tr><th>Quantity</th><th>Inherited key</th><th>Actual (live)</th><th></th></tr>";
+  var b="";
+  for(var i=0;i<rows.length;i++){
+    b+="<tr><td><b>"+rows[i][0]+"</b></td><td>"+rows[i][1]+"</td><td>"+rows[i][2]+"</td><td class='x'>✗</td></tr>";
+  }
+  t.innerHTML=h+b;
+})();
+
+// ---- tabs ----
+var tb=document.querySelectorAll('.tab-btn');
+for(var i=0;i<tb.length;i++){
+  tb[i].addEventListener('click', function(){
+    var p=this.getAttribute('data-p');
+    var bs=document.querySelectorAll('.tab-btn'); for(var j=0;j<bs.length;j++) bs[j].classList.remove('active');
+    this.classList.add('active');
+    var ps=document.querySelectorAll('.panel'); for(var k=0;k<ps.length;k++) ps[k].classList.remove('active');
+    document.getElementById(p).classList.add('active');
+  });
+}
+</script>
+</body>
+</html>
