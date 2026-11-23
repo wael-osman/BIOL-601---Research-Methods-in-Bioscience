@@ -16,7 +16,10 @@ self-contained web page — nothing is installed, saved, or sent.
 | 6 | Significance Explorer · Choose the Right Test |
 | 7 | Data Quality Detective · Data Readiness Checker |
 | 8 | Data Assessment Explorer |
-
+| 9 | Data Assessment Explorer II|
+| 10 | Figure Detective|
+| 11 | Presentation Self-check|
+| 12 | Reviewers Eye|
 The landing page (`index.html`) links every activity by week.
 
 ---
