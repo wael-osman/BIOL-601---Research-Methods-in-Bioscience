@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Figure Detective · BIOL 601 · Week 10</title>
+<style>
+  :root{
+    --navy:#1B2A4A; --blue:#2E5A88; --amber:#C8881F; --slate:#5C7CA6;
+    --paper:#F4F1EA; --card:#FFFFFF; --ink:#1F2733; --mute:#5E6B7A;
+    --line:#DAD3C5; --blueT:#E4EAF1; --amberT:#F6EAD3; --crimson:#9E2B25; --good:#2F7D5B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Calibri,'Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 18px 60px}
+  header{background:var(--navy);color:#fff;border-radius:16px;padding:26px 28px;position:relative;overflow:hidden}
+  header .eye{color:var(--amber);font-weight:700;letter-spacing:2px;font-size:13px}
+  header h1{font-family:Cambria,Georgia,serif;font-size:34px;margin:4px 0 6px}
+  header p{color:#CBD7E6;font-size:15px;max-width:680px}
+  header .blob{position:absolute;width:220px;height:220px;border-radius:50%;background:#2E5A88;top:-70px;right:-40px;opacity:.5}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 14px}
+  .tab{border:1px solid var(--line);background:var(--card);color:var(--blue);font-weight:700;font-size:14px;padding:10px 16px;border-radius:999px;cursor:pointer}
+  .tab:hover{background:var(--blueT)}
+  .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+  .panel.show{display:block;animation:f .25s ease}
+  @keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2{font-family:Cambria,Georgia,serif;color:var(--navy);font-size:22px;margin-bottom:4px}
+  .sub{color:var(--mute);font-size:14px;margin-bottom:16px}
+  .casebox{background:var(--navy);color:#fff;border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .casebox .tagn{color:var(--amber);font-weight:700;font-size:13px;letter-spacing:1px}
+  .casebox .q{font-size:17px;font-weight:700;margin-top:4px}
+  .label{font-weight:700;color:var(--blue);font-size:13px;margin:12px 0 6px;letter-spacing:.5px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opt{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:600;color:var(--ink);text-align:left;font-size:14px}
+  .opt:hover{border-color:var(--blue);background:var(--blueT)}
+  .opt.correct{background:#E2EFE7;border-color:var(--good);color:var(--good)}
+  .opt.wrong{background:var(--amberT);border-color:var(--crimson);color:var(--crimson)}
+  .opt.disabled{pointer-events:none;opacity:.85}
+  .fb{margin-top:14px;padding:13px 16px;border-radius:10px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+  .btn{background:var(--amber);color:#fff;border:none;border-radius:999px;padding:10px 18px;font-weight:700;cursor:pointer;font-size:14px}
+  .btn.sec{background:var(--blue)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .score{font-weight:700;color:var(--blue);margin-left:auto}
+  .prog{height:6px;background:var(--blueT);border-radius:999px;overflow:hidden;margin-bottom:16px}
+  .prog>div{height:100%;background:var(--amber);width:0;transition:width .3s}
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left}
+  th{background:var(--navy);color:#fff}
+  tr:nth-child(even) td{background:var(--blueT)}
+  td:first-child{font-weight:700;color:var(--navy)}
+  /* decision tree */
+  .tree{display:flex;flex-direction:column;gap:14px}
+  .qcard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .qcard h3{font-family:Cambria,serif;color:var(--blue);font-size:17px;margin-bottom:8px}
+  .branch{display:flex;gap:10px;flex-wrap:wrap}
+  .branch button{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:700;color:var(--blue);cursor:pointer}
+  .branch button:hover{background:var(--blueT)}
+  .answerCard{background:var(--navy);color:#fff;border-radius:12px;padding:16px 18px;display:none}
+  .answerCard.show{display:block}
+  .answerCard b{color:var(--amber)}
+  .note{font-size:12.5px;color:var(--mute);font-style:italic;margin-top:14px}
+  @media(max-width:640px){.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="blob"></div>
+    <div class="eye">BIOL 601 · WEEK 10 · WORKSHOP</div>
+    <h1>Figure Detective</h1>
+    <p>Match the graph to the study. Read each scenario, pick the right figure, then the test that belongs with it — the bridge between choosing figures and reading the literature that defines your variables.</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="quiz" onclick="showTab('quiz')">The Quiz</button>
+    <button class="tab" data-tab="tree" onclick="showTab('tree')">Decision Tree</button>
+    <button class="tab" data-tab="ref" onclick="showTab('ref')">Figure → Test</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="panel show" id="panel-quiz">
+    <h2>The Quiz</h2>
+    <div class="sub">Two picks per case: first the figure, then the test. Feedback explains the reasoning — and the deliberate traps.</div>
+    <div class="prog"><div id="progBar"></div></div>
+    <div class="casebox">
+      <div class="tagn" id="caseTag">CASE 1 / 9</div>
+      <div class="q" id="caseText">Loading…</div>
+    </div>
+    <div class="label">1 · Best figure</div>
+    <div class="opts" id="figOpts"></div>
+    <div class="label" id="testLabel" style="display:none">2 · Matching test</div>
+    <div class="opts" id="testOpts" style="display:none"></div>
+    <div class="fb" id="quizFb"></div>
+    <div class="controls">
+      <button class="btn" id="nextBtn" onclick="nextCase()" disabled>Next case →</button>
+      <button class="btn sec" onclick="resetQuiz()">Restart</button>
+      <span class="score" id="quizScore">Score: 0 / 0</span>
+    </div>
+  </div>
+
+  <!-- DECISION TREE -->
+  <div class="panel" id="panel-tree">
+    <h2>The Decision Tree</h2>
+    <div class="sub">Classify the DATA first. Answer the question that fits your study and the figure family follows.</div>
+    <div class="tree">
+      <div class="qcard">
+        <h3>What is the shape of your question?</h3>
+        <div class="branch">
+          <button onclick="treePick('compare')">Comparing groups</button>
+          <button onclick="treePick('relate')">A relationship</button>
+          <button onclick="treePick('time')">Change over time / time-to-event</button>
+          <button onclick="treePick('dist')">Distribution or composition</button>
+        </div>
+      </div>
+      <div class="answerCard" id="treeAnswer"></div>
+    </div>
+    <div class="note">Tip: check the distribution (histogram / Q-Q) before naming a parametric test — it decides t-test/ANOVA vs Mann-Whitney/Kruskal-Wallis.</div>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="panel" id="panel-ref">
+    <h2>Figure → Use → Test</h2>
+    <div class="sub">The master reference. Keep it open while you draft your figures.</div>
+    <table id="refTable"></table>
+    <div class="note">Remember Séralini (2012): a bar without error bars, tiny groups, and selective comparisons let a figure perform a claim the data couldn't support. Show variability, report n, and never cherry-pick.</div>
+  </div>
+</div>
+
+<script>
+function showTab(name){
+  var tabs=document.getElementById('tabs').getElementsByClassName('tab');
+  for(var i=0;i<tabs.length;i++){ tabs[i].classList.toggle('active', tabs[i].getAttribute('data-tab')===name); }
+  ['quiz','tree','ref'].forEach(function(p){ document.getElementById('panel-'+p).classList.toggle('show', p===name); });
+}
+
+/* ---- Quiz data ---- */
+var cases=[
+  { q:"CRP levels measured in three patient groups: Control, Mild, and Severe COVID.",
+    figs:["Boxplot (or bar with error bars)","Pie chart","Scatter plot","Kaplan-Meier curve"], fig:"Boxplot (or bar with error bars)",
+    tests:["One-way ANOVA / Kruskal-Wallis","Paired t-test","Log-rank test","Pearson correlation"], test:"One-way ANOVA / Kruskal-Wallis",
+    fb:"Three independent groups on a continuous outcome → boxplot (shows spread) and ANOVA. The trap: a bare bar with no error bars — the Séralini mistake. Check normality to choose ANOVA vs Kruskal-Wallis." },
+  { q:"A gene-expression dataset of 500 genes across 12 samples to be displayed and grouped.",
+    figs:["Heatmap","Bar chart","Line graph","Pie chart"], fig:"Heatmap",
+    tests:["Hierarchical clustering / PCA","t-test","Log-rank test","Chi-square"], test:"Hierarchical clustering / PCA",
+    fb:"The scale (genes × samples) forces a heatmap; the analysis is unsupervised structure-finding (clustering/PCA), not a single p-value." },
+  { q:"Cytokine levels measured BEFORE and AFTER a booster vaccine in the same 15 patients.",
+    figs:["Paired before-after plot","Independent-groups bar chart","Volcano plot","Forest plot"], fig:"Paired before-after plot",
+    tests:["Paired t-test / Wilcoxon signed-rank","Independent t-test","ANOVA","Log-rank test"], test:"Paired t-test / Wilcoxon signed-rank",
+    fb:"'Before and after in the same patients' = PAIRED data. The classic error is treating it as two independent groups — the pairing changes the test." },
+  { q:"Time until recovery after treatment is compared between two groups.",
+    figs:["Kaplan-Meier survival curve","Bar chart","Histogram","Scatter plot"], fig:"Kaplan-Meier survival curve",
+    tests:["Log-rank test","t-test","Chi-square","Pearson correlation"], test:"Log-rank test",
+    fb:"'Time until' an event is time-to-event data → Kaplan-Meier shows survival probability; the log-rank test compares the curves." },
+  { q:"The distribution of mutation types is compared across several different cancer types.",
+    figs:["Grouped / stacked bar chart","Pie chart","Line graph","Scatter plot"], fig:"Grouped / stacked bar chart",
+    tests:["Chi-square test of independence","t-test","ANOVA","Log-rank test"], test:"Chi-square test of independence",
+    fb:"Two categorical variables (mutation type × cancer type) → grouped/stacked bar + chi-square. The deliberate trap is a pie — one pie can't compare across groups." },
+  { q:"A dose-response experiment measures gene expression at increasing drug concentrations.",
+    figs:["Scatter plot with regression","Bar chart","Pie chart","Heatmap"], fig:"Scatter plot with regression",
+    tests:["Pearson / Spearman correlation","Chi-square","Log-rank test","ANOVA"], test:"Pearson / Spearman correlation",
+    fb:"Two continuous variables with a relationship → scatter + regression. Pearson for linear/normal, Spearman for monotonic. Correlation ≠ causation." },
+  { q:"Across the whole transcriptome, show fold-change against statistical significance for every gene.",
+    figs:["Volcano plot","Boxplot","Pie chart","Forest plot"], fig:"Volcano plot",
+    tests:["DESeq2 / limma / edgeR","t-test","Log-rank test","Pearson correlation"], test:"DESeq2 / limma / edgeR",
+    fb:"Volcano plots show effect size (log2 FC) and significance (−log10 p) together; thresholds highlight differentially expressed genes." },
+  { q:"You pool effect sizes and confidence intervals from eight studies in a meta-analysis.",
+    figs:["Forest plot","Histogram","Scatter plot","Bar chart"], fig:"Forest plot",
+    tests:["Pooled CI / odds ratio","t-test","ANOVA","Chi-square"], test:"Pooled CI / odds ratio",
+    fb:"Forest plots are the standard meta-analysis figure: the diamond is the pooled estimate, the vertical line marks 'no effect', and heterogeneity (I²) is assessed." },
+  { q:"BONUS: You need to check normality before running an ANOVA.",
+    figs:["Histogram (or Q-Q plot)","Pie chart","Forest plot","Kaplan-Meier curve"], fig:"Histogram (or Q-Q plot)",
+    tests:["Shapiro-Wilk test","Log-rank test","Chi-square","Pearson correlation"], test:"Shapiro-Wilk test",
+    fb:"Check the distribution's shape with a histogram or Q-Q plot and confirm with Shapiro-Wilk — this decides parametric (ANOVA) vs non-parametric (Kruskal-Wallis). Distribution before test, always." }
+];
+var qi=0, qScore=0, qAns=0, figDone=false, testDone=false;
+
+function renderCase(){
+  var c=cases[qi];
+  document.getElementById('caseTag').textContent='CASE '+(qi+1)+' / '+cases.length;
+  document.getElementById('caseText').textContent=c.q;
+  document.getElementById('progBar').style.width=((qi)/cases.length*100)+'%';
+  figDone=false; testDone=false;
+  document.getElementById('nextBtn').disabled=true;
+  document.getElementById('quizFb').className='fb';
+  document.getElementById('testLabel').style.display='none';
+  var to=document.getElementById('testOpts'); to.style.display='none'; to.innerHTML='';
+  var fo=document.getElementById('figOpts'); fo.innerHTML='';
+  shuffle(c.figs.slice()).forEach(function(o){
+    var b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.onclick=function(){ pickFig(b,o); };
+    fo.appendChild(b);
+  });
+}
+function shuffle(a){ for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+function pickFig(btn,choice){
+  if(figDone) return; figDone=true;
+  var c=cases[qi];
+  var opts=document.getElementById('figOpts').getElementsByClassName('opt');
+  for(var i=0;i<opts.length;i++){ opts[i].classList.add('disabled'); if(opts[i].textContent===c.fig) opts[i].classList.add('correct'); }
+  if(choice!==c.fig) btn.classList.add('wrong');
+  var firstCorrect = (choice===c.fig);
+  // reveal test step
+  document.getElementById('testLabel').style.display='block';
+  var to=document.getElementById('testOpts'); to.style.display='grid';
+  shuffle(c.tests.slice()).forEach(function(o){
+    var b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.onclick=function(){ pickTest(b,o,firstCorrect); };
+    to.appendChild(b);
+  });
+}
+function pickTest(btn,choice,figCorrect){
+  if(testDone) return; testDone=true;
+  var c=cases[qi];
+  var opts=document.getElementById('testOpts').getElementsByClassName('opt');
+  for(var i=0;i<opts.length;i++){ opts[i].classList.add('disabled'); if(opts[i].textContent===c.test) opts[i].classList.add('correct'); }
+  if(choice!==c.test) btn.classList.add('wrong');
+  var testCorrect=(choice===c.test);
+  qAns++;
+  var got = (figCorrect?1:0)+(testCorrect?1:0);
+  if(figCorrect&&testCorrect) qScore++;
+  var fb=document.getElementById('quizFb'); fb.className='fb show';
+  var ok=figCorrect&&testCorrect;
+  fb.style.background= ok?'#E2EFE7':'#F6EAD3';
+  fb.style.color= ok?'#2F7D5B':'#9E2B25';
+  fb.textContent=(ok?'Both correct! ':(got===1?'Half right. ':'Not quite. '))+c.fb;
+  document.getElementById('quizScore').textContent='Score: '+qScore+' / '+qAns;
+  document.getElementById('progBar').style.width=((qi+1)/cases.length*100)+'%';
+  document.getElementById('nextBtn').disabled=false;
+}
+function nextCase(){ qi=(qi+1)%cases.length; renderCase(); }
+function resetQuiz(){ qi=0; qScore=0; qAns=0; document.getElementById('quizScore').textContent='Score: 0 / 0'; renderCase(); }
+
+/* ---- Decision tree ---- */
+var treeAns={
+  compare:{f:"Bar (with error bars), boxplot, or violin",t:"t-test / Mann-Whitney (2 groups); ANOVA / Kruskal-Wallis (3+)",n:"Show variability — never a bare mean. Check normality to pick parametric vs non-parametric."},
+  relate:{f:"Scatter plot (add a regression line)",t:"Pearson (linear/normal) or Spearman (monotonic/ranked) correlation; regression to model",n:"Correlation ≠ causation."},
+  time:{f:"Line graph (time-course) or Kaplan-Meier (time-to-event)",t:"Repeated-measures ANOVA / mixed models; log-rank for survival",n:"'Time until an event' signals survival analysis."},
+  dist:{f:"Histogram, violin, heatmap, or (rarely) pie",t:"Normality test (Shapiro-Wilk); clustering/PCA for large expression matrices",n:"A single pie can't compare across groups — use a grouped bar + chi-square for categorical × categorical."}
+};
+function treePick(k){
+  var a=treeAns[k]; var el=document.getElementById('treeAnswer'); el.className='answerCard show';
+  el.innerHTML='<div><b>Figure:</b> '+a.f+'</div><div style="margin-top:6px"><b>Test:</b> '+a.t+'</div><div style="margin-top:6px"><b>Watch:</b> '+a.n+'</div>';
+}
+
+/* ---- Reference table ---- */
+var ref=[
+  ["Bar chart","Compare group means","t-test, ANOVA"],
+  ["Boxplot / Violin","Distributions & outliers","Mann-Whitney, Kruskal-Wallis"],
+  ["Scatter plot","Relationship between variables","Correlation, regression"],
+  ["Line graph","Time-course / progression","Repeated measures"],
+  ["Histogram","Distribution of one variable","Normality (Shapiro-Wilk)"],
+  ["Heatmap","Large-scale expression","Hierarchical clustering, PCA"],
+  ["Volcano plot","Expression vs significance","DESeq2, limma, edgeR"],
+  ["Kaplan-Meier","Survival over time","Log-rank test"],
+  ["ROC curve","Diagnostic performance","AUC"],
+  ["Forest plot","Meta-analysis effects","CI, odds ratio"],
+  ["Grouped bar","Categorical × categorical","Chi-square"],
+  ["Pie chart","Simple proportions (one group)","Descriptive only"]
+];
+function buildRef(){
+  var t=document.getElementById('refTable');
+  var html='<tr><th>Figure</th><th>Best use</th><th>Linked test / tool</th></tr>';
+  ref.forEach(function(r){ html+='<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; });
+  t.innerHTML=html;
+}
+
+/* init */
+renderCase();
+buildRef();
+</script>
+</body>
+</html>
